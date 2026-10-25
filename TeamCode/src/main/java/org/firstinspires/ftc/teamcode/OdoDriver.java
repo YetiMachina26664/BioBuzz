@@ -95,11 +95,11 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
             if (blueTeam) {
                 return calcHypotenuse(
                         BLUEGOAL.x() - follower.pose().x(),
-                        BLUEGOAL.getY() - follower.getPose().getY());
+                        BLUEGOAL.y() - follower.pose().y());
             } else {
                 return calcHypotenuse(
-                        REDGOAL.getX() - follower.getPose().getX(),
-                        REDGOAL.getY() - follower.getPose().getY());
+                        REDGOAL.x() - follower.pose().x(),
+                        REDGOAL.y() - follower.pose().y());
             }
         }
 
@@ -107,12 +107,12 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
         public double getTargetAngle(boolean blueTeam, Follower follower) {
             double tgtY, tgtX;
             if (blueTeam) {
-                tgtY = Math.abs(BLUEGOAL.getY() - follower.getPose().getY());
-                tgtX = Math.abs(BLUEGOAL.getX() - follower.getPose().getX());
+                tgtY = Math.abs(BLUEGOAL.y() - follower.pose().y());
+                tgtX = Math.abs(BLUEGOAL.x() - follower.pose().x());
                 return Math.abs(((Math.PI)/2) - Math.atan2(tgtX, tgtY));
             } else {
-                tgtY = Math.abs(REDGOAL.getY() - follower.getPose().getY());
-                tgtX = Math.abs(REDGOAL.getX() - follower.getPose().getX());
+                tgtY = Math.abs(REDGOAL.y() - follower.pose().y());
+                tgtX = Math.abs(REDGOAL.x() - follower.pose().x());
                 return -Math.abs(((Math.PI)/2) - Math.atan2(tgtX, tgtY));
             }
         }
@@ -139,7 +139,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
         }
 
         public Pose getStartingPose(NormalizedRGBA colors) {
-            Pose pose = new Pose();
+            Pose pose = new Pose(0,0);
 
             int red   = (int) (colors.red * 255);
             int green = (int) (colors.green * 255);
@@ -179,7 +179,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 
         @Override
         public void init() {
-            follower = Constants.createFollower(hardwareMap);
+            follower = Constants.create(hardwareMap);
 
             color = hardwareMap.get(RevColorSensorV3.class, "color");
         /*NormalizedColorSensor normalizedSensor = color;
@@ -255,8 +255,8 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
             NormalizedColorSensor normalizedSensor = color;
             normalizedSensor.setGain(40);
             NormalizedRGBA colors = normalizedSensor.getNormalizedColors();
-            while (follower.getPose() == null || follower.getPose().getX() < 1) {
-                follower.setStartingPose(getStartingPose(colors));
+            while (follower.pose() == null || follower.pose().x() < 1) {
+                //follower.setStartingPose(getStartingPose(colors));
                 follower.update();
             }
 
@@ -265,14 +265,14 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
             telemetry.addData("Red", colors.red * 255);
             telemetry.addData("Green", colors.green * 255);
             telemetry.addData("Blue", colors.blue * 255);
-            telemetry.addData("Starting Pose", follower.getPose());
+            telemetry.addData("Starting Pose", follower.pose());
             telemetry.update();
         }
 
 
         @Override
         public void start() {
-            follower.startTeleopDrive();
+            //follower.startTeleopDrive();
         }
 
         @Override
@@ -281,18 +281,18 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
             telemetryM.update();
 
             if (!autoAimActive) {
-                follower.setTeleOpDrive(
+                /*follower.setTeleOpDrive(
                         -gamepad1.left_stick_y,
                         -gamepad1.left_stick_x,
                         -gamepad1.right_stick_x,
                         true
-                );
+                );*/
             }
 
 
             //tgtTheta = getTargetAngle(isBlueTeam, follower);
             distFromGoal = getDist(isBlueTeam, follower);
-            hypotenuse = calcHypotenuse(follower.getPose().getX(), follower.getPose().getY());
+            hypotenuse = calcHypotenuse(follower.pose().x(), follower.pose().y());
             //calculate shooting speed tolerances based on distance from the goal
             if (distFromGoal < 110) {
                 negativeTol = 40.0;
@@ -328,14 +328,14 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
                 tgtTheta = getTargetAngle(isBlueTeam, follower);
 
                 //freeze the current x/y
-                Pose currentPose = follower.getPose();
+                Pose currentPose = follower.pose();
                 tempPose = new Pose(
-                        currentPose.getX(),
-                        currentPose.getY(),
+                        currentPose.x(),
+                        currentPose.y(),
                         tgtTheta
                 );
 
-                follower.holdPoint(tempPose);
+                follower.hold(tempPose);
                 //dPadLeftToggle = !dPadLeftToggle;
             }
 
@@ -395,7 +395,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
         if (gamepad1.dpad_left && !follower.isBusy()) {
             tgtTheta = getTargetAngle(isBlueTeam, follower);
             follower.turnTo(tgtTheta);
-            //follower.holdPoint(new Pose(follower.getPose().getX(), follower.getPose().getY()), tgtTheta,true);
+            //follower.holdPoint(new Pose(follower.pose().x(), follower.pose().y()), tgtTheta,true);
             isAtPose = follower.atPose(tempPose,1,1,.01);
         }
 
@@ -403,7 +403,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 
             // Compute heading error in degrees
             double headingErrorRad =
-                    AngleUnit.normalizeRadians(tgtTheta - follower.getPose().getHeading());
+                    AngleUnit.normalizeRadians(tgtTheta - follower.pose().getHeading());
             double headingErrorDeg = Math.toDegrees(headingErrorRad);
 
             // Stop auto-aim when within 1 degree of the target
@@ -414,7 +414,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
         */
             if (gamepad1.dpad_right && autoAimActive) {
                 autoAimActive = false;
-                follower.startTeleopDrive();
+                //follower.startTeleopDrive();
                 // = gamepad1.dpad_right;
             }
 
@@ -470,16 +470,16 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
             telemetry.addData("Ballz target", "%4.2f", ballzPos);
             telemetry.addData("Ballz", "%4.2f", ballz.getPosition());
             telemetry.addData("Intake", "%4.2f", intakeSpeed);
-            telemetry.addData("PedroPose", "X: %.2f in, \nY: %.2f in, \nHeading %.2f degrees", follower.getPose().getX(), follower.getPose().getY(), Math.toDegrees(follower.getPose().getHeading()));
+            telemetry.addData("PedroPose", "X: %.2f in, \nY: %.2f in, \nHeading %.2f degrees", follower.pose().x(), follower.pose().y(), Math.toDegrees(follower.pose().heading()));
             telemetry.addData("Auto-Aim Active", autoAimActive ? "Yes" : "No");
             telemetry.addData("Target Heading","%4.2f degrees", tgtTheta*57.296);
             telemetry.addData("Target Distance","%4.2f in", distFromGoal);
-            telemetry.addData("GOAL POS", isBlueTeam ? BLUEGOAL.pose().y : REDGOAL.getPose());
+            telemetry.addData("GOAL POS", isBlueTeam ? BLUEGOAL.y() : new Pose(REDGOAL.x(),REDGOAL.y()));
             telemetry.addData("isBusy",follower.isBusy());
             telemetry.update();
 
-            telemetryM.debug("position", follower.getPose());
-            telemetryM.debug("velocity", follower.getVelocity());
+            telemetryM.debug("position", follower.pose());
+            telemetryM.debug("velocity", follower.velocity());
             telemetryM.debug("L Current Velocity", lFlywheel.getVelocity());
             telemetryM.debug("R Current Velocity", rFlywheel.getVelocity());
             telemetryM.debug("Target V % Polynomial", liftoffPoly);
@@ -490,4 +490,3 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
             telemetryM.debug("isAtPose", isAtPose);
         }
     }
-}
