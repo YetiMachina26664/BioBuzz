@@ -1,10 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
-import com.pedropathing.api.PoseFactory;
 import com.pedropathing.math.Pose;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -64,6 +62,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
         //Initial flywheel percentages for far and close shots respectively
         double liftoffPoly;
         double liftoffLin;
+        private boolean isFieldFar;
 
         //Intake and Belt initial speeds
         double intakeSpeed = 0.0;
@@ -73,8 +72,10 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 
         public static final double MAX_TICKS_PER_SECOND = 2840;
         public static final double MAX_TICKS_BELT = 2840;
-        public Pose REDGOAL = new Pose(144, 0);
-        public Pose BLUEGOAL = new Pose(144, 144);
+        public Pose BLUE_GOAL_FAR = new Pose(12.75, 18.57);
+        public Pose BLUE_GOAL_CLOSE = new Pose(12.75, -18.57);
+        public Pose RED_GOAL_FAR=new Pose(-12.75,18.57);
+        public Pose RED_GOAL_CLOSE=new Pose(-12.75,-18.75);
 
         public Pose tempPose = new Pose(0,0,0);
 
@@ -94,12 +95,12 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
         public double getDist(boolean blueTeam, Follower follower) {
             if (blueTeam) {
                 return calcHypotenuse(
-                        BLUEGOAL.x() - follower.pose().x(),
-                        BLUEGOAL.y() - follower.pose().y());
+                        BLUE_GOAL_CLOSE.x() - follower.pose().x(),
+                        BLUE_GOAL_CLOSE.y() - follower.pose().y());
             } else {
                 return calcHypotenuse(
-                        REDGOAL.x() - follower.pose().x(),
-                        REDGOAL.y() - follower.pose().y());
+                        BLUE_GOAL_FAR.x() - follower.pose().x(),
+                        BLUE_GOAL_FAR.y() - follower.pose().y());
             }
         }
 
@@ -107,12 +108,12 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
         public double getTargetAngle(boolean blueTeam, Follower follower) {
             double tgtY, tgtX;
             if (blueTeam) {
-                tgtY = Math.abs(BLUEGOAL.y() - follower.pose().y());
-                tgtX = Math.abs(BLUEGOAL.x() - follower.pose().x());
+                tgtY = Math.abs(BLUE_GOAL_CLOSE.y() - follower.pose().y());
+                tgtX = Math.abs(BLUE_GOAL_CLOSE.x() - follower.pose().x());
                 return Math.abs(((Math.PI)/2) - Math.atan2(tgtX, tgtY));
             } else {
-                tgtY = Math.abs(REDGOAL.y() - follower.pose().y());
-                tgtX = Math.abs(REDGOAL.x() - follower.pose().x());
+                tgtY = Math.abs(BLUE_GOAL_FAR.y() - follower.pose().y());
+                tgtX = Math.abs(BLUE_GOAL_FAR.x() - follower.pose().x());
                 return -Math.abs(((Math.PI)/2) - Math.atan2(tgtX, tgtY));
             }
         }
@@ -462,8 +463,16 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
                 rFlywheel.setVelocity(0);
                 greenLight = false;
             }
-
-            telemetry.addData("Flywheel Target TPS", "%4.2f", liftoffPoly);
+            telemetry.addData("Pose","%4.1f,%4.1f",follower.pose().x(),follower.pose().y());
+            telemetry.addData("Angle","%4.2f(degrees),%4.2f(radians)",Math.toDegrees(follower.pose().heading()),follower.pose().heading());
+            telemetry.addData("Intake","isActive:%s,Speed(rpm):%4.2f,Speed(tps):%4.2f",(intake.getPower()>0.0f)?"True":"False",intakeSpeed,intakeSpeed);
+            telemetry.addData("Flywheel","isActive:%s,Speed(rpm):%4.2f,Speed(tps):%4.2f",(lFlywheel.getPower()>0.0f)?"True":"False",lFlywheel.getVelocity(),lFlywheel.getVelocity());
+            telemetry.addData("Teamcolor","%s",isBlueTeam?"blue":"red");
+            telemetry.addData("Fieldside","%s", isFieldFar ?"Far":"Close");
+            telemetry.addData("Goal","Distance:%4.1f,X:4.1f,Y:4.1f",distFromGoal,isBlueTeam?(isFieldFar ?BLUE_GOAL_FAR.x():BLUE_GOAL_CLOSE.x()):(isFieldFar?RED_GOAL_FAR.x():RED_GOAL_CLOSE.x()),isBlueTeam?(isFieldFar ?BLUE_GOAL_FAR.y():BLUE_GOAL_CLOSE.y()):(isFieldFar?RED_GOAL_FAR.y():RED_GOAL_CLOSE.y()));
+            telemetry.addData("Target Angle","%4.2f(degrees),%4.2f(radians)",Math.toDegrees(tgtTheta),tgtTheta);
+            telemetry.addData("Difference in Angles","%4.2f(degrees),%4.2f(radians)",Math.toDegrees(tgtTheta-follower.pose().heading()),tgtTheta-follower.pose().heading());
+            /*
             telemetry.addData("Flywheel TPS Left/Right", "%4.2f, %4.2f", rFlywheel.getVelocity(), lFlywheel.getVelocity());
             telemetry.addData("Belt TPS", "%4.2f", belt.getVelocity());
             telemetry.addData("Belt TPS Target", "%4.2f", beltSpeed);
@@ -487,6 +496,6 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
             telemetryM.debug("belt", beltSpeed);
             telemetryM.debug("intake", intakeSpeed);
             telemetryM.debug("adjustSpeed", adjustSpeed);
-            telemetryM.debug("isAtPose", isAtPose);
+            telemetryM.debug("isAtPose", isAtPose);*/
         }
     }
