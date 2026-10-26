@@ -89,6 +89,21 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 
         boolean isBlueTeam;
 
+
+	// Change these values
+	// Colours to Check against in RGB
+	public static int[] red_check={0,0,0};
+	public static int[] green_check={0,0,0};
+	public static int[] blue_check={0,0,0};
+	public static int[] yellow_check={0,0,0};
+
+	// Change these values
+	// Locations for positions for starting locations
+	public Pose BLUE_START_FAR=new Pose(0.0,0.0);
+	public Pose BLUE_START_CLOSE=new Pose(0.0,0.0);
+	public Pose RED_START_FAR=new Pose(0.0,0.0);
+	public Pose RED_START_CLOSE=new Pose(0.0,0.0);
+
         double adjustedSpeed = 0.0;
 
         // Function to get the distance from the robot to the goal, relies on calcHypotenuse function
@@ -140,42 +155,27 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
         }
 
         public Pose getStartingPose(NormalizedRGBA colors) {
-            Pose pose = new Pose(0,0);
-
-            int red   = (int) (colors.red * 255);
-            int green = (int) (colors.green * 255);
-            int blue  = (int) (colors.blue * 255);
-
-            //Scarlet
-            if ((red > 155 && red < 175)
-                    && (green > 72 && green < 92)
-                    && (blue > 39 && blue < 59)) {
-                isBlueTeam = false;
-                pose = new Pose(9, 56, 0);
-                return pose;
-                //Cyan
-            } else if ((red > 35 && red < 55)
-                    && (green > 124 && green < 144)
-                    && (blue > 244 && blue <= 255)) {
-                isBlueTeam = true;
-                pose = new Pose(9, 88, 0);
-                return pose;
-                //Ivory
-            } else if ((red > 245 && red <= 255)
-                    && (green > 245 && green <= 255)
-                    && (blue > 245 && blue <= 255)) {
-                isBlueTeam = false;
-                pose = new Pose(124, 22, -Math.toRadians(45));
-                return pose;
-                //Wood (Chat)
-            } else if ((red > 88 && red < 108)
-                    && (green > 140 && green < 160)
-                    && (blue > 81 && blue < 101)) {
-                isBlueTeam = true;
-                pose = new Pose(124, 122, Math.toRadians(45));
-                return pose;
-            }
-            return pose;
+		// Get RGB values
+		int[] rgb={(int) (colors.red * 255),(int) (colors.green * 255),(int) (colors.blue * 255)};
+		// Set isBlueTeam to false just in case it is on red team
+		isBlueTeam=false;
+		// Check RGB values against red colour to print
+		// Check to see if each channel is in tolerances(10 on each side)
+		if(((rgb[0]>(red_check[0]-10))&&(rgb[0]<(red_check[0]+10)))&&
+			((rgb[1]>(red_check[1]-10))&&(rgb[1]<(red_check[1]+10)))&&
+			((rgb[2]>(red_check[2]-10))&&(rgb[2]<(red_check[2]+10)))) return RED_START_FAR;
+		if(((rgb[0]>(yellow_check[0]-10))&&(rgb[0]<(yellow_check[0]+10)))&&
+			((rgb[1]>(yellow_check[1]-10))&&(rgb[1]<(yellow_check[1]+10)))&&
+			((rgb[2]>(yellow_check[2]-10))&&(rgb[2]<(yellow_check[2]+10)))) return RED_START_CLOSE;
+		// Assume Blue team because
+		isBlueTeam=true;
+		if(((rgb[0]>(blue_check[0]-10))&&(rgb[0]<(blue_check[0]+10)))&&
+			((rgb[1]>(blue_check[1]-10))&&(rgb[1]<(blue_check[1]+10)))&&
+			((rgb[2]>(blue_check[2]-10))&&(rgb[2]<(blue_check[2]+10)))) return BLUE_START_FAR;
+		if(((rgb[0]>(green_check[0]-10))&&(rgb[0]<(green_check[0]+10)))&&
+			((rgb[1]>(green_check[1]-10))&&(rgb[1]<(green_check[1]+10)))&&
+			((rgb[2]>(green_check[2]-10))&&(rgb[2]<(green_check[2]+10)))) return BLUE_START_CLOSE;
+		return new Pose(0.0,0.0);
         }
 
         @Override
