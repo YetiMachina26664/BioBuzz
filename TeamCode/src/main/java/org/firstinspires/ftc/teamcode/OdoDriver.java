@@ -24,12 +24,11 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 
         private RevColorSensorV3 color;
 
-        private DcMotorEx belt = null;
-        private DcMotorEx lFlywheel = null;
-        private DcMotorEx rFlywheel = null;
+        private DcMotorEx flywheel = null;
         private DcMotor intake = null;
 
-        private Servo ballz = null;
+        private Servo gatePollen = null;
+        private Servo gateNectar = null;
 
         boolean aPressed;       // Tracks if A is toggled ON or OFF
         boolean previousAState; // Tracks the button state from the previous loop cycle
@@ -62,13 +61,12 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
         //Initial flywheel percentages for far and close shots respectively
         double liftoffPoly;
         double liftoffLin;
-        private boolean isFieldFar;
 
         //Intake and Belt initial speeds
         double intakeSpeed = 0.0;
-        double beltSpeed = 0.0;
 
-        double ballzPos = 0.0;
+        double gateNectarPos = 0.0;
+        double gatePollenPos = 0.0;
 
         public static final double MAX_TICKS_PER_SECOND = 2840;
         public static final double MAX_TICKS_BELT = 2840;
@@ -87,52 +85,73 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 
         boolean isAtPose = false;
 
-        boolean isBlueTeam;
+        boolean isBlueTeam = false;
+        boolean isFieldFar = false;
 
         double adjustedSpeed = 0.0;
 
         // Function to get the distance from the robot to the goal, relies on calcHypotenuse function
-        public double getDist(boolean blueTeam, Follower follower) {
-            if (blueTeam) {
-                return calcHypotenuse(
-                        BLUE_GOAL_CLOSE.x() - follower.pose().x(),
-                        BLUE_GOAL_CLOSE.y() - follower.pose().y());
-            } else {
+        public double getDist(Follower follower) {
+            if (isBlueTeam && isFieldFar) {
                 return calcHypotenuse(
                         BLUE_GOAL_FAR.x() - follower.pose().x(),
                         BLUE_GOAL_FAR.y() - follower.pose().y());
+            } else if (isBlueTeam && !isFieldFar) {
+                return calcHypotenuse(
+                        BLUE_GOAL_CLOSE.x() - follower.pose().x(),
+                        BLUE_GOAL_CLOSE.y() - follower.pose().y());
+            } else if (!isBlueTeam && isFieldFar) {
+                return calcHypotenuse(
+                        RED_GOAL_FAR.x() - follower.pose().x(),
+                        RED_GOAL_FAR.y() - follower.pose().y());
+            } else {
+                return calcHypotenuse(
+                        RED_GOAL_CLOSE.x() - follower.pose().x(),
+                        RED_GOAL_CLOSE.y() - follower.pose().y());
             }
         }
 
         //get the target heading for the robot to the goal
-        public double getTargetAngle(boolean blueTeam, Follower follower) {
+        public double getTargetAngle(Follower follower) {
             double tgtY, tgtX;
-            if (blueTeam) {
+            if (isBlueTeam && !isFieldFar) {
                 tgtY = Math.abs(BLUE_GOAL_CLOSE.y() - follower.pose().y());
                 tgtX = Math.abs(BLUE_GOAL_CLOSE.x() - follower.pose().x());
                 return Math.abs(((Math.PI)/2) - Math.atan2(tgtX, tgtY));
-            } else {
+            } else if (isBlueTeam && isFieldFar){
                 tgtY = Math.abs(BLUE_GOAL_FAR.y() - follower.pose().y());
                 tgtX = Math.abs(BLUE_GOAL_FAR.x() - follower.pose().x());
+                return -Math.abs(((Math.PI)/2) - Math.atan2(tgtX, tgtY));
+            } else if (!isBlueTeam && isFieldFar) {
+                tgtY = Math.abs(RED_GOAL_FAR.y() - follower.pose().y());
+                tgtX = Math.abs(RED_GOAL_FAR.x() - follower.pose().x());
+                return -Math.abs(((Math.PI)/2) - Math.atan2(tgtX, tgtY));
+            } else {
+                tgtY = Math.abs(RED_GOAL_CLOSE.y() - follower.pose().y());
+                tgtX = Math.abs(RED_GOAL_CLOSE.x() - follower.pose().x());
                 return -Math.abs(((Math.PI)/2) - Math.atan2(tgtX, tgtY));
             }
         }
 
-        //calculation for the straightline distance between the robot and the goal
+        //Calculation for the straightline distance between the robot and the goal
         public double calcHypotenuse(double x, double y) {
             return Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+        }
+
+        public boolean isOnFarSide(Follower follower) {
+            return (follower.pose().y() >= 0);
         }
 
         public double powerRegressionPoly(double x) {
             if (x < 60) {
                 return 960;
             } else if (x < 160) {
-                //return (int) (Math.round((1227 - 14.4 * x + 0.194 * Math.pow(x, 2) - .0007 * Math.pow(x, 3))/ 20) * 20);
+                //Return (int) (Math.round((1227 - 14.4 * x + 0.194 * Math.pow(x, 2) - .0007 * Math.pow(x, 3))/ 20) * 20);
                 return (int) (Math.round((480 + 5.0 * x )/ 20) * 20);
             } else {
                 return 1460;
             }
-            //return (0.0014 * Math.pow(x, 2)) + (2.5179 * x) + 788.18;
+            //Return (0.0014 * Math.pow(x, 2)) + (2.5179 * x) + 788.18;
         }
 
         public double powerRegressionLin(double x) {
@@ -183,45 +202,33 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
             follower = Constants.create(hardwareMap);
 
             color = hardwareMap.get(RevColorSensorV3.class, "color");
-        /*NormalizedColorSensor normalizedSensor = color;
-        normalizedSensor.setGain(40);
-        NormalizedRGBA colors = normalizedSensor.getNormalizedColors();
 
-        follower.setStartingPose(getStartingPose(colors));*/
+            /*NormalizedColorSensor normalizedSensor = color;
+            normalizedSensor.setGain(40);
+            NormalizedRGBA colors = normalizedSensor.getNormalizedColors();
+
+            follower.setPose(getStartingPose(colors));*/
             follower.update();
             telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
 
             //Hardware map declarations
-            ballz = hardwareMap.get(Servo.class, "stopper");
-            belt = hardwareMap.get(DcMotorEx.class, "belt");
-            lFlywheel = hardwareMap.get(DcMotorEx.class, "leftFly");
-            rFlywheel = hardwareMap.get(DcMotorEx.class, "rightFly");
+            gateNectar = hardwareMap.get(Servo.class, "gateNectar");
+            gatePollen = hardwareMap.get(Servo.class, "gatePollen");
+            flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
             intake = hardwareMap.get(DcMotor.class, "intake");
 
-
-            ballz.setDirection(Servo.Direction.REVERSE);
-
-            belt.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
             //Zero power behaviors for Flywheels
-            lFlywheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            rFlywheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-            belt.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            belt.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            flywheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
             // Set Flywheel modes for velocity running instead of power percentage
-            lFlywheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            rFlywheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            lFlywheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            rFlywheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            flywheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            flywheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             //comment out set modes for the fly wheels above if we want to use the PID for the flywheels
             //PIDFCoefficients newPID = new PIDFCoefficients(3.0,0.8,0.0,10.0);
             //lFlywheel.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, newPID);
             //rFlywheel.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, newPID);
 
-            //Reverse left flywheel to oppose right
-            lFlywheel.setDirection(DcMotorSimple.Direction.REVERSE);
+            //flywheel.setDirection(DcMotorSimple.Direction.REVERSE);
 
             aPressed = false;       // Tracks if A is toggled ON or OFF
             previousAState = false; // Tracks the button state from the previous loop cycle
@@ -249,15 +256,16 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
             autoAimActive = false;
 
             adjustSpeed = true;         //Checks whether or not speed was adjusted
-            greenLight = false;         //permission to shoot
+            greenLight = false;         //Permission to shoot
         }
 
         public void init_loop() {
             NormalizedColorSensor normalizedSensor = color;
             normalizedSensor.setGain(40);
             NormalizedRGBA colors = normalizedSensor.getNormalizedColors();
+
             while (follower.pose() == null || follower.pose().x() < 1) {
-                //follower.setStartingPose(getStartingPose(colors));
+                follower.setPose(getStartingPose(colors));
                 follower.update();
             }
 
@@ -273,35 +281,41 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 
         @Override
         public void start() {
-            //follower.startTeleopDrive();
+            double forward = -gamepad1.left_stick_y;
+            double lateral = gamepad1.left_stick_x;
+            double turn = gamepad1.right_stick_x;
+
+            follower.manual(forward, lateral, turn);
+            follower.update();
         }
+
+
 
         @Override
         public void loop() {
+            double forward = -gamepad1.left_stick_y;
+            double lateral = gamepad1.left_stick_x;
+            double turn = gamepad1.right_stick_x;
+
             follower.update();
             telemetryM.update();
 
             if (!autoAimActive) {
-                /*follower.setTeleOpDrive(
-                        -gamepad1.left_stick_y,
-                        -gamepad1.left_stick_x,
-                        -gamepad1.right_stick_x,
-                        true
-                );*/
+                follower.manual(forward, lateral, turn);
             }
 
-
-            //tgtTheta = getTargetAngle(isBlueTeam, follower);
-            distFromGoal = getDist(isBlueTeam, follower);
+            isFieldFar = isOnFarSide(follower);
+            tgtTheta = getTargetAngle(follower);
+            distFromGoal = getDist(follower);
             hypotenuse = calcHypotenuse(follower.pose().x(), follower.pose().y());
             //calculate shooting speed tolerances based on distance from the goal
-            if (distFromGoal < 110) {
+            /*if (distFromGoal < 110) {
                 negativeTol = 40.0;
                 positiveTol = 80.0;
             } else {
                 negativeTol = 40.0;
                 positiveTol = 80.0;
-            }
+            }*/
 
             // --- TOGGLE LOGIC ---
             // This detects a single button press event for each button.
@@ -325,8 +339,6 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 
             if (gamepad1.dpad_left && !autoAimActive) {
                 autoAimActive = true;
-                //get target heading
-                tgtTheta = getTargetAngle(isBlueTeam, follower);
 
                 //freeze the current x/y
                 Pose currentPose = follower.pose();
@@ -347,33 +359,17 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
             //previousDPadRightState = gamepad1.dpad_right; //previous was left, was this intentional?
 
             // --- ACTION LOGIC ---
-            //Moved from outside of the While OpMode is active, do we need a while loop? Can we use
-            //a pedropath to get in position without changing how we handle the wheels
-            //use the orient function??
 
             //determine if there is a greenLight to shoot
-            if (lFlywheel.getVelocity() >= liftoffPoly - negativeTol && lFlywheel.getVelocity() <= liftoffPoly + positiveTol && rFlywheel.getVelocity() >= liftoffPoly - negativeTol && rFlywheel.getVelocity() <= liftoffPoly + positiveTol) {
+            if (flywheel.getVelocity() >= liftoffPoly - negativeTol && flywheel.getVelocity() <= liftoffPoly + positiveTol && flywheel.getVelocity() >= liftoffPoly - negativeTol && flywheel.getVelocity() <= liftoffPoly + positiveTol) {
                 greenLight = true;
             } else {
                 greenLight = false;
             }
 
-            // Set Belt speed. X (reverse) overrides A (forward).
-            if (bPressed) {
-                beltSpeed = 2000;
-            } else if (yPressed) {
-                beltSpeed = -2400;
-            } else if (greenLight) {
-                beltSpeed = -2100;
-            }
-            else {
-                beltSpeed = 0.0;
-            }
-
             // Set intake speed.
             if (aPressed) {
                 intakeSpeed = 1.0;
-                beltSpeed = -2400;
             } else if (greenLight) {
                 intakeSpeed = 0.5;
             }
@@ -382,17 +378,29 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
             }
 
             if (xPressed) {
-                ballzPos = 0.7;
+                gateNectarPos = 0.7;
             } else {
-                ballzPos = 0.0;
+                gateNectarPos = 0.0;
             }
 
-            distFromGoal = getDist(isBlueTeam, follower);
+            if (bPressed) {
+                gatePollenPos = 0.7;
+            } else {
+                gatePollenPos = 0.0;
+            }
+
+            if (gamepad2.y && isBlueTeam) {
+                follower.setPose(new Pose(0, 0, 0));
+            } else if (gamepad2.y && !isBlueTeam) {
+                follower.setPose(new Pose(141.5, 0, Math.toRadians(180)));
+            }
+
+            distFromGoal = getDist(follower);
 
             liftoffPoly = powerRegressionPoly(distFromGoal) + adjustedSpeed;
             liftoffLin = powerRegressionLin(distFromGoal);
 
-        /* Before autoaim boolean, used turnto
+        /*Before autoaim boolean, used turnto
         if (gamepad1.dpad_left && !follower.isBusy()) {
             tgtTheta = getTargetAngle(isBlueTeam, follower);
             follower.turnTo(tgtTheta);
