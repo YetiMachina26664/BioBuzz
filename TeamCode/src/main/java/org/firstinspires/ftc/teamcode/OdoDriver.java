@@ -9,7 +9,6 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -70,10 +69,10 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 
         public static final double MAX_TICKS_PER_SECOND = 2840;
         public static final double MAX_TICKS_BELT = 2840;
-        public Pose BLUE_GOAL_FAR = new Pose(12.75, 18.57);
-        public Pose BLUE_GOAL_CLOSE = new Pose(12.75, -18.57);
-        public Pose RED_GOAL_FAR=new Pose(-12.75,18.57);
-        public Pose RED_GOAL_CLOSE=new Pose(-12.75,-18.75);
+        public Pose BLUE_GOAL_FAR = new Pose(84.75, 90.57);
+        public Pose BLUE_GOAL_CLOSE = new Pose(84.75, 53.43);
+        public Pose RED_GOAL_FAR=new Pose(59.25,90.57);
+        public Pose RED_GOAL_CLOSE=new Pose(59.25,53.43);
 
         public Pose tempPose = new Pose(0,0,0);
 
@@ -91,21 +90,21 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 
 	// Change these values
 	// Colours to Check against in RGB
-	public static int[] red_check={0,0,0};
-	public static int[] green_check={0,0,0};
-	public static int[] blue_check={0,0,0};
-	public static int[] yellow_check={0,0,0};
+	public static int[] red_check = {0,0,0};
+	public static int[] green_check = {0,0,0};
+	public static int[] blue_check = {0,0,0};
+	public static int[] yellow_check = {0,0,0};
 
 	// Change these values
 	// Locations for positions for starting locations
-	public Pose BLUE_START_FAR=new Pose(0.0,0.0);
-	public Pose BLUE_START_CLOSE=new Pose(0.0,0.0);
-	public Pose RED_START_FAR=new Pose(0.0,0.0);
-	public Pose RED_START_CLOSE=new Pose(0.0,0.0);
+	public Pose BLUE_START_FAR = new Pose(0.0,0.0, Math.toRadians(180));
+	public Pose BLUE_START_CLOSE = new Pose(0.0,0.0,Math.toRadians(180));
+	public Pose RED_START_FAR = new Pose(0.0,0.0,0.0);
+	public Pose RED_START_CLOSE = new Pose(0.0,0.0,0.0);
 
-        double adjustedSpeed = 0.0;
+    double adjustedSpeed = 0.0;
 
-        // Function to get the distance from the robot to the goal, relies on calcHypotenuse function
+    // Function to get the distance from the robot to the goal, relies on calcHypotenuse function
         public double getDist(Follower follower) {
             if (isBlueTeam && isFieldFar) {
                 return calcHypotenuse(
@@ -183,17 +182,21 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 		if(((rgb[0]>(red_check[0]-10))&&(rgb[0]<(red_check[0]+10)))&&
 			((rgb[1]>(red_check[1]-10))&&(rgb[1]<(red_check[1]+10)))&&
 			((rgb[2]>(red_check[2]-10))&&(rgb[2]<(red_check[2]+10)))) return RED_START_FAR;
+
 		if(((rgb[0]>(yellow_check[0]-10))&&(rgb[0]<(yellow_check[0]+10)))&&
 			((rgb[1]>(yellow_check[1]-10))&&(rgb[1]<(yellow_check[1]+10)))&&
 			((rgb[2]>(yellow_check[2]-10))&&(rgb[2]<(yellow_check[2]+10)))) return RED_START_CLOSE;
+
 		// Assume Blue team because
 		isBlueTeam=true;
 		if(((rgb[0]>(blue_check[0]-10))&&(rgb[0]<(blue_check[0]+10)))&&
 			((rgb[1]>(blue_check[1]-10))&&(rgb[1]<(blue_check[1]+10)))&&
 			((rgb[2]>(blue_check[2]-10))&&(rgb[2]<(blue_check[2]+10)))) return BLUE_START_FAR;
+
 		if(((rgb[0]>(green_check[0]-10))&&(rgb[0]<(green_check[0]+10)))&&
 			((rgb[1]>(green_check[1]-10))&&(rgb[1]<(green_check[1]+10)))&&
 			((rgb[2]>(green_check[2]-10))&&(rgb[2]<(green_check[2]+10)))) return BLUE_START_CLOSE;
+
 		return new Pose(0.0,0.0);
         }
 
@@ -450,36 +453,31 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
             }
 
             // Set ballz position
-            ballz.setPosition(ballzPos);
+            gateNectar.setPosition(gateNectarPos);
+            gatePollen.setPosition(gatePollenPos);
 
             // Set Intake power percentage
             intake.setPower(intakeSpeed);
-            // Set belt power percentage
-            belt.setVelocity(beltSpeed);
 
             // Set flywheel velocities (LB = High power shot, RB = Low power shot)
             // Set flywheel velocities (LB = High power shot, RB = Low power shot)
             if (gamepad1.right_trigger > 0) {
-                lFlywheel.setVelocity(liftoffPoly);
-                rFlywheel.setVelocity(liftoffPoly);
-                ballz.setPosition(0.0);
+                flywheel.setVelocity(liftoffPoly);
             } else if (gamepad1.left_trigger > 0) {
-                lFlywheel.setVelocity(1000 + adjustedSpeed);
-                rFlywheel.setVelocity(1000 + adjustedSpeed);
+                flywheel.setVelocity(1000 + adjustedSpeed);
             } else { // Set -100 by default.
-                lFlywheel.setVelocity(0);
-                rFlywheel.setVelocity(0);
+                flywheel.setVelocity(0);
                 greenLight = false;
             }
-            telemetry.addData("Pose","%4.1f,%4.1f",follower.pose().x(),follower.pose().y());
-            telemetry.addData("Angle","%4.2f(degrees),%4.2f(radians)",Math.toDegrees(follower.pose().heading()),follower.pose().heading());
-            telemetry.addData("Intake","isActive:%s,Speed(rpm):%4.2f,Speed(tps):%4.2f",(intake.getPower()>0.0f)?"True":"False",intakeSpeed,intakeSpeed);
-            telemetry.addData("Flywheel","isActive:%s,Speed(rpm):%4.2f,Speed(tps):%4.2f",(lFlywheel.getPower()>0.0f)?"True":"False",lFlywheel.getVelocity(),lFlywheel.getVelocity());
-            telemetry.addData("Teamcolor","%s",isBlueTeam?"blue":"red");
-            telemetry.addData("Fieldside","%s", isFieldFar ?"Far":"Close");
-            telemetry.addData("Goal","Distance:%4.1f,X:4.1f,Y:4.1f",distFromGoal,isBlueTeam?(isFieldFar ?BLUE_GOAL_FAR.x():BLUE_GOAL_CLOSE.x()):(isFieldFar?RED_GOAL_FAR.x():RED_GOAL_CLOSE.x()),isBlueTeam?(isFieldFar ?BLUE_GOAL_FAR.y():BLUE_GOAL_CLOSE.y()):(isFieldFar?RED_GOAL_FAR.y():RED_GOAL_CLOSE.y()));
-            telemetry.addData("Target Angle","%4.2f(degrees),%4.2f(radians)",Math.toDegrees(tgtTheta),tgtTheta);
-            telemetry.addData("Difference in Angles","%4.2f(degrees),%4.2f(radians)",Math.toDegrees(tgtTheta-follower.pose().heading()),tgtTheta-follower.pose().heading());
+            telemetry.addData("Pose","%4.1f, %4.1f", follower.pose().x(), follower.pose().y());
+            telemetry.addData("Angle","%4.2f(degrees), %4.2f(radians)",Math.toDegrees(follower.pose().heading()), follower.pose().heading());
+            telemetry.addData("Intake","isActive:%s, Speed(rpm):%4.2f, Speed(tps):%4.2f",(intake.getPower()>0.0f) ? "True":"False", intakeSpeed, intakeSpeed);
+            telemetry.addData("Flywheel","isActive:%s, Speed(rpm):%4.2f, Speed(tps):%4.2f",(flywheel.getPower()>0.0f) ? "True":"False", flywheel.getVelocity(), flywheel.getVelocity());
+            telemetry.addData("Team Color","%s",isBlueTeam ? "Blue":"Red");
+            telemetry.addData("Field Side","%s", isFieldFar ? "Far":"Close");
+            telemetry.addData("Goal","Distance:%4.1f,X:4.1f,Y:4.1f", distFromGoal, isBlueTeam ? (isFieldFar ? BLUE_GOAL_FAR.x():BLUE_GOAL_CLOSE.x()) : (isFieldFar ? RED_GOAL_FAR.x():RED_GOAL_CLOSE.x()), isBlueTeam ? (isFieldFar ? BLUE_GOAL_FAR.y():BLUE_GOAL_CLOSE.y()) : (isFieldFar ? RED_GOAL_FAR.y():RED_GOAL_CLOSE.y()));
+            telemetry.addData("Target Angle","%4.2f(degrees), %4.2f(radians)", Math.toDegrees(tgtTheta), tgtTheta);
+            telemetry.addData("Difference in Angles","%4.2f(degrees), %4.2f(radians)",Math.toDegrees(tgtTheta-follower.pose().heading()), tgtTheta-follower.pose().heading());
             /*
             telemetry.addData("Flywheel TPS Left/Right", "%4.2f, %4.2f", rFlywheel.getVelocity(), lFlywheel.getVelocity());
             telemetry.addData("Belt TPS", "%4.2f", belt.getVelocity());
