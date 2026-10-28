@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 
     @TeleOp(name="Odometry Driver", group="Linear OpMode")
@@ -403,19 +404,15 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
             liftoffPoly = powerRegressionPoly(distFromGoal) + adjustedSpeed;
             liftoffLin = powerRegressionLin(distFromGoal);
 
-        /*Before autoaim boolean, used turnto
         if (gamepad1.dpad_left && !follower.isBusy()) {
-            tgtTheta = getTargetAngle(isBlueTeam, follower);
-            follower.turnTo(tgtTheta);
-            //follower.holdPoint(new Pose(follower.pose().x(), follower.pose().y()), tgtTheta,true);
-            isAtPose = follower.atPose(tempPose,1,1,.01);
+            tgtTheta = getTargetAngle(follower);
+            follower.hold(new Pose(follower.pose().x(), follower.pose().y(), tgtTheta));
+            isAtPose = follower.pose() == tempPose;
         }
 
         if (autoAimActive) {
-
             // Compute heading error in degrees
-            double headingErrorRad =
-                    AngleUnit.normalizeRadians(tgtTheta - follower.pose().getHeading());
+            double headingErrorRad = AngleUnit.normalizeRadians(tgtTheta - follower.pose().heading());
             double headingErrorDeg = Math.toDegrees(headingErrorRad);
 
             // Stop auto-aim when within 1 degree of the target
@@ -423,11 +420,11 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
                 autoAimActive = false;
             }
         }
-        */
+
             if (gamepad1.dpad_right && autoAimActive) {
                 autoAimActive = false;
-                //follower.startTeleopDrive();
-                // = gamepad1.dpad_right;
+                follower.manual(forward, lateral, turn);
+                previousDPadRightState = gamepad1.dpad_right;
             }
 
 
@@ -452,15 +449,14 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
                 adjustSpeed = true;
             }
 
-            // Set ballz position
+            // Set nectar and pollen gate position
             gateNectar.setPosition(gateNectarPos);
             gatePollen.setPosition(gatePollenPos);
 
             // Set Intake power percentage
             intake.setPower(intakeSpeed);
 
-            // Set flywheel velocities (LB = High power shot, RB = Low power shot)
-            // Set flywheel velocities (LB = High power shot, RB = Low power shot)
+            // Set flywheel velocity (LB = High power shot, RB = Low power shot)
             if (gamepad1.right_trigger > 0) {
                 flywheel.setVelocity(liftoffPoly);
             } else if (gamepad1.left_trigger > 0) {
