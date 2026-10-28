@@ -172,7 +172,11 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
         public double powerRegressionLin(double x) {
             return (3.0058 * x) + 756.46;
         }
-
+		public boolean compareColorArrays(int[] rgb,int[] colorCheck){
+			return (((rgb[0]>(colorCheck[0]-colorTolerence))&&(rgb[0]<(colorCheck[0]+colorTolerence)))&&
+			((rgb[1]>(colorCheck[1]-colorTolerence))&&(rgb[1]<(colorCheck[1]+colorTolerence)))&&
+			((rgb[2]>(colorCheck[2]-colorTolerence))&&(rgb[2]<(colorCheck[2]+colorTolerence))));
+		}
         public Pose getStartingPose(NormalizedRGBA colors) {
 		// Get RGB values
 		int[] rgb={(int) (colors.red * 255),(int) (colors.green * 255),(int) (colors.blue * 255)};
@@ -180,23 +184,15 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 		isBlueTeam=false;
 		// Check RGB values against red colour to print
 		// Check to see if each channel is in tolerances(10 on each side)
-		if(((rgb[0]>(redCheck[0]-colorTolerence))&&(rgb[0]<(redCheck[0]+colorTolerence)))&&
-			((rgb[1]>(redCheck[1]-colorTolerence))&&(rgb[1]<(redCheck[1]+colorTolerence)))&&
-			((rgb[2]>(redCheck[2]-colorTolerence))&&(rgb[2]<(redCheck[2]+colorTolerence)))) return RED_START_CLOSE;
+		if(compareColorArrays(rgb,redCheck)) return RED_START_CLOSE;
 
-		if(((rgb[0]>(yellowCheck[0]-colorTolerence))&&(rgb[0]<(yellowCheck[0]+colorTolerence)))&&
-			((rgb[1]>(yellowCheck[1]-colorTolerence))&&(rgb[1]<(yellowCheck[1]+colorTolerence)))&&
-			((rgb[2]>(yellowCheck[2]-colorTolerence))&&(rgb[2]<(yellowCheck[2]+colorTolerence)))) return RED_START_FAR;
+		if(compareColorArrays(rgb,yellowCheck)) return RED_START_FAR;
 
 		// Assume Blue team because
 		isBlueTeam=true;
-		if(((rgb[0]>(blueCheck[0]-colorTolerence))&&(rgb[0]<(blueCheck[0]+colorTolerence)))&&
-			((rgb[1]>(blueCheck[1]-colorTolerence))&&(rgb[1]<(blueCheck[1]+colorTolerence)))&&
-			((rgb[2]>(blueCheck[2]-colorTolerence))&&(rgb[2]<(blueCheck[2]+colorTolerence)))) return BLUE_START_CLOSE;
+		if(compareColorArrays(rgb,blueCheck)) return BLUE_START_CLOSE;
 
-		if(((rgb[0]>(greenCheck[0]-colorTolerence))&&(rgb[0]<(greenCheck[0]+colorTolerence)))&&
-			((rgb[1]>(greenCheck[1]-colorTolerence))&&(rgb[1]<(greenCheck[1]+colorTolerence)))&&
-			((rgb[2]>(greenCheck[2]-colorTolerence))&&(rgb[2]<(greenCheck[2]+colorTolerence)))) return BLUE_START_FAR;
+		if(compareColorArrays(rgb,greenCheck)) return BLUE_START_FAR;
 
 		return new Pose(0.0,0.0);
         }
