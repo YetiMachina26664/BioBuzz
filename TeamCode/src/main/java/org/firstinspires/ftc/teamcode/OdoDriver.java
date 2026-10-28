@@ -87,13 +87,13 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
         boolean isBlueTeam = false;
         boolean isFieldFar = false;
 
-
+	public static final int colorTolerence = 10;
 	// Change these values
 	// Colours to Check against in RGB
-	public static int[] red_check = {0,0,0};
-	public static int[] green_check = {0,0,0};
-	public static int[] blue_check = {0,0,0};
-	public static int[] yellow_check = {0,0,0};
+	public static int[] redCheck = {0,0,0};
+	public static int[] greenCheck = {0,0,0};
+	public static int[] blueCheck = {0,0,0};
+	public static int[] yellowCheck = {0,0,0};
 
 	// Change these values
 	// Locations for positions for starting locations
@@ -179,23 +179,23 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 		isBlueTeam=false;
 		// Check RGB values against red colour to print
 		// Check to see if each channel is in tolerances(10 on each side)
-		if(((rgb[0]>(red_check[0]-10))&&(rgb[0]<(red_check[0]+10)))&&
-			((rgb[1]>(red_check[1]-10))&&(rgb[1]<(red_check[1]+10)))&&
-			((rgb[2]>(red_check[2]-10))&&(rgb[2]<(red_check[2]+10)))) return RED_START_CLOSE;
+		if(((rgb[0]>(redCheck[0]-colorTolerence))&&(rgb[0]<(redCheck[0]+colorTolerence)))&&
+			((rgb[1]>(redCheck[1]-colorTolerence))&&(rgb[1]<(redCheck[1]+colorTolerence)))&&
+			((rgb[2]>(redCheck[2]-colorTolerence))&&(rgb[2]<(redCheck[2]+colorTolerence)))) return RED_START_CLOSE;
 
-		if(((rgb[0]>(yellow_check[0]-10))&&(rgb[0]<(yellow_check[0]+10)))&&
-			((rgb[1]>(yellow_check[1]-10))&&(rgb[1]<(yellow_check[1]+10)))&&
-			((rgb[2]>(yellow_check[2]-10))&&(rgb[2]<(yellow_check[2]+10)))) return RED_START_FAR;
+		if(((rgb[0]>(yellowCheck[0]-colorTolerence))&&(rgb[0]<(yellowCheck[0]+colorTolerence)))&&
+			((rgb[1]>(yellowCheck[1]-colorTolerence))&&(rgb[1]<(yellowCheck[1]+colorTolerence)))&&
+			((rgb[2]>(yellowCheck[2]-colorTolerence))&&(rgb[2]<(yellowCheck[2]+colorTolerence)))) return RED_START_FAR;
 
 		// Assume Blue team because
 		isBlueTeam=true;
-		if(((rgb[0]>(blue_check[0]-10))&&(rgb[0]<(blue_check[0]+10)))&&
-			((rgb[1]>(blue_check[1]-10))&&(rgb[1]<(blue_check[1]+10)))&&
-			((rgb[2]>(blue_check[2]-10))&&(rgb[2]<(blue_check[2]+10)))) return BLUE_START_CLOSE;
+		if(((rgb[0]>(blueCheck[0]-colorTolerence))&&(rgb[0]<(blueCheck[0]+colorTolerence)))&&
+			((rgb[1]>(blueCheck[1]-colorTolerence))&&(rgb[1]<(blueCheck[1]+colorTolerence)))&&
+			((rgb[2]>(blueCheck[2]-colorTolerence))&&(rgb[2]<(blueCheck[2]+colorTolerence)))) return BLUE_START_CLOSE;
 
-		if(((rgb[0]>(green_check[0]-10))&&(rgb[0]<(green_check[0]+10)))&&
-			((rgb[1]>(green_check[1]-10))&&(rgb[1]<(green_check[1]+10)))&&
-			((rgb[2]>(green_check[2]-10))&&(rgb[2]<(green_check[2]+10)))) return BLUE_START_FAR;
+		if(((rgb[0]>(greenCheck[0]-colorTolerence))&&(rgb[0]<(greenCheck[0]+colorTolerence)))&&
+			((rgb[1]>(greenCheck[1]-colorTolerence))&&(rgb[1]<(greenCheck[1]+colorTolerence)))&&
+			((rgb[2]>(greenCheck[2]-colorTolerence))&&(rgb[2]<(greenCheck[2]+colorTolerence)))) return BLUE_START_FAR;
 
 		return new Pose(0.0,0.0);
         }
