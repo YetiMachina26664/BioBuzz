@@ -181,21 +181,21 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 		// Check to see if each channel is in tolerances(10 on each side)
 		if(((rgb[0]>(red_check[0]-10))&&(rgb[0]<(red_check[0]+10)))&&
 			((rgb[1]>(red_check[1]-10))&&(rgb[1]<(red_check[1]+10)))&&
-			((rgb[2]>(red_check[2]-10))&&(rgb[2]<(red_check[2]+10)))) return RED_START_FAR;
+			((rgb[2]>(red_check[2]-10))&&(rgb[2]<(red_check[2]+10)))) return RED_START_CLOSE;
 
 		if(((rgb[0]>(yellow_check[0]-10))&&(rgb[0]<(yellow_check[0]+10)))&&
 			((rgb[1]>(yellow_check[1]-10))&&(rgb[1]<(yellow_check[1]+10)))&&
-			((rgb[2]>(yellow_check[2]-10))&&(rgb[2]<(yellow_check[2]+10)))) return RED_START_CLOSE;
+			((rgb[2]>(yellow_check[2]-10))&&(rgb[2]<(yellow_check[2]+10)))) return RED_START_FAR;
 
 		// Assume Blue team because
 		isBlueTeam=true;
 		if(((rgb[0]>(blue_check[0]-10))&&(rgb[0]<(blue_check[0]+10)))&&
 			((rgb[1]>(blue_check[1]-10))&&(rgb[1]<(blue_check[1]+10)))&&
-			((rgb[2]>(blue_check[2]-10))&&(rgb[2]<(blue_check[2]+10)))) return BLUE_START_FAR;
+			((rgb[2]>(blue_check[2]-10))&&(rgb[2]<(blue_check[2]+10)))) return BLUE_START_CLOSE;
 
 		if(((rgb[0]>(green_check[0]-10))&&(rgb[0]<(green_check[0]+10)))&&
 			((rgb[1]>(green_check[1]-10))&&(rgb[1]<(green_check[1]+10)))&&
-			((rgb[2]>(green_check[2]-10))&&(rgb[2]<(green_check[2]+10)))) return BLUE_START_CLOSE;
+			((rgb[2]>(green_check[2]-10))&&(rgb[2]<(green_check[2]+10)))) return BLUE_START_FAR;
 
 		return new Pose(0.0,0.0);
         }
