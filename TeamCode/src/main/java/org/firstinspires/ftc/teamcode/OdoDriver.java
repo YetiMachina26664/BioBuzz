@@ -91,10 +91,10 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 	public static final int colorTolerence = 10;
 	// Change these values
 	// Colours to Check against in RGB
-	public static int[] redCheck = {0,0,0};
-	public static int[] greenCheck = {0,0,0};
-	public static int[] blueCheck = {0,0,0};
-	public static int[] yellowCheck = {0,0,0};
+	public static int[] redCheck = {765,1020,765};
+	public static int[] greenCheck = {510,765,765};
+	public static int[] blueCheck = {255,510,765};
+	public static int[] yellowCheck = {1530,2040,765};
 
 	// Change these values
 	// Locations for positions for starting locations
