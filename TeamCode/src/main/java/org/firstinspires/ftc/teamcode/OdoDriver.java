@@ -27,7 +27,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
         private DcMotorEx flywheel = null;
         private DcMotor intake = null;
 
-        private Servo gatePollen = null;
+        //private Servo gatePollen = null;
         private Servo gateNectar = null;
 
         boolean aPressed;       // Tracks if A is toggled ON or OFF
@@ -66,7 +66,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
         double intakeSpeed = 0.0;
 
         double gateNectarPos = 0.0;
-        double gatePollenPos = 0.0;
+        //double gatePollenPos = 0.0;
 
         public static final double MAX_TICKS_PER_SECOND = 2840;
         public static final double MAX_TICKS_BELT = 2840;
@@ -213,7 +213,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 
             //Hardware map declarations
             gateNectar = hardwareMap.get(Servo.class, "gateNectar");
-            gatePollen = hardwareMap.get(Servo.class, "gatePollen");
+            //gatePollen = hardwareMap.get(Servo.class, "gatePollen");
             flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
             intake = hardwareMap.get(DcMotor.class, "intake");
 
@@ -264,10 +264,10 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
             normalizedSensor.setGain(40);
             NormalizedRGBA colors = normalizedSensor.getNormalizedColors();
 
-            while (follower.pose() == null || follower.pose().x() < 1) {
+            /*while (follower.pose() == null || follower.pose().x() < 1) {
                 follower.setPose(getStartingPose(colors));
                 follower.update();
-            }
+            }*/
 
             follower.update();
 
@@ -383,11 +383,11 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
                 gateNectarPos = 0.0;
             }
 
-            if (bPressed) {
+            /*if (bPressed) {
                 gatePollenPos = 0.7;
             } else {
                 gatePollenPos = 0.0;
-            }
+            }*/
 
             if (gamepad2.y && isBlueTeam) {
                 follower.setPose(new Pose(0, 0, 0));
@@ -428,7 +428,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
             // Increment and Decrement Flywheel Speed
             // max speed is 40% of max rotation, min is 10% of min rotation.
             if (gamepad1.right_bumper && liftoffPoly >= 0.1 && adjustSpeed) {
-                adjustedSpeed += 20.0;
+                adjustedSpeed += 100.0; //adjusted from 20
                 adjustSpeed = false;
             }
             // Check if speed was adjusted.
@@ -437,7 +437,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
             }
 
             if (gamepad1.left_bumper && liftoffPoly >= 0.1 && adjustSpeed) {
-                adjustedSpeed -= 20.0;
+                adjustedSpeed -= 100.0; //adjusted from 20
                 adjustSpeed = false;
             }
             // Check if speed was adjusted.
@@ -447,7 +447,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 
             // Set nectar and pollen gate position
             gateNectar.setPosition(gateNectarPos);
-            gatePollen.setPosition(gatePollenPos);
+            //gatePollen.setPosition(gatePollenPos);
 
             // Set Intake power percentage
             intake.setPower(intakeSpeed);
