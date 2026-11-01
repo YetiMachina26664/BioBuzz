@@ -259,6 +259,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
             NormalizedRGBA colors = normalizedSensor.getNormalizedColors();
 
             while (follower.pose() == null || follower.pose().x()<-0.01f||follower.pose().y()<-0.01f) {
+                telemetry.addData("Error","Cannot find valid position");
                 follower.setPose(getStartingPose(colors));
                 follower.update();
             }
