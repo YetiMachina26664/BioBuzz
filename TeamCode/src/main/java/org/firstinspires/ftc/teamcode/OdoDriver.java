@@ -27,7 +27,6 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
         private DcMotorEx flywheel = null;
         private DcMotor intake = null;
 
-        //private Servo gatePollen = null;
         private Servo gateNectar = null;
 
         boolean aPressed;       // Tracks if A is toggled ON or OFF
@@ -66,7 +65,6 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
         double intakeSpeed = 0.0;
 
         double gateNectarPos = 0.0;
-        //double gatePollenPos = 0.0;
 
         public static final double MAX_TICKS_PER_SECOND = 2840;
         public static final double MAX_TICKS_BELT = 2840;
@@ -98,10 +96,10 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 
 	// Change these values
 	// Locations for positions for starting locations
-	public Pose BLUE_START_FAR = new Pose(0.0,0.0, Math.toRadians(180));
-	public Pose BLUE_START_CLOSE = new Pose(0.0,0.0,Math.toRadians(180));
-	public Pose RED_START_FAR = new Pose(0.0,0.0,0.0);
-	public Pose RED_START_CLOSE = new Pose(0.0,0.0,0.0);
+	public Pose BLUE_START_FAR = new Pose(84.75,144, Math.toRadians(180));
+	public Pose BLUE_START_CLOSE = new Pose(84.75,0.0,Math.toRadians(180));
+	public Pose RED_START_FAR = new Pose(59.25,0.0,0.0);
+	public Pose RED_START_CLOSE = new Pose(59.25,144,0.0);
 
     double adjustedSpeed = 0.0;
 
@@ -132,20 +130,17 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
             if (isBlueTeam && !isFieldFar) {
                 tgtY = Math.abs(BLUE_GOAL_CLOSE.y() - follower.pose().y());
                 tgtX = Math.abs(BLUE_GOAL_CLOSE.x() - follower.pose().x());
-                return Math.abs(((Math.PI)/2) - Math.atan2(tgtX, tgtY));
             } else if (isBlueTeam && isFieldFar){
                 tgtY = Math.abs(BLUE_GOAL_FAR.y() - follower.pose().y());
                 tgtX = Math.abs(BLUE_GOAL_FAR.x() - follower.pose().x());
-                return -Math.abs(((Math.PI)/2) - Math.atan2(tgtX, tgtY));
             } else if (!isBlueTeam && isFieldFar) {
                 tgtY = Math.abs(RED_GOAL_FAR.y() - follower.pose().y());
                 tgtX = Math.abs(RED_GOAL_FAR.x() - follower.pose().x());
-                return -Math.abs(((Math.PI)/2) - Math.atan2(tgtX, tgtY));
             } else {
                 tgtY = Math.abs(RED_GOAL_CLOSE.y() - follower.pose().y());
                 tgtX = Math.abs(RED_GOAL_CLOSE.x() - follower.pose().x());
-                return -Math.abs(((Math.PI)/2) - Math.atan2(tgtX, tgtY));
             }
+            return Math.abs(((Math.PI)/2) - Math.atan2(tgtX, tgtY));
         }
 
         //Calculation for the straightline distance between the robot and the goal
@@ -194,7 +189,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 
 		if(compareColorArrays(rgb,greenCheck)) return BLUE_START_FAR;
 
-		return new Pose(0.0,0.0);
+		return new Pose(-1.0,-1.0);
         }
 
         @Override
@@ -213,7 +208,6 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 
             //Hardware map declarations
             gateNectar = hardwareMap.get(Servo.class, "gateNectar");
-            //gatePollen = hardwareMap.get(Servo.class, "gatePollen");
             flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
             intake = hardwareMap.get(DcMotor.class, "intake");
 
@@ -264,10 +258,10 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
             normalizedSensor.setGain(40);
             NormalizedRGBA colors = normalizedSensor.getNormalizedColors();
 
-            /*while (follower.pose() == null || follower.pose().x() < 1) {
+            while (follower.pose() == null || follower.pose().x()<0.0||follower.pose().y()<0.0) {
                 follower.setPose(getStartingPose(colors));
                 follower.update();
-            }*/
+            }
 
             follower.update();
 
@@ -383,12 +377,6 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
                 gateNectarPos = 0.0;
             }
 
-            /*if (bPressed) {
-                gatePollenPos = 0.7;
-            } else {
-                gatePollenPos = 0.0;
-            }*/
-
             if (gamepad2.y && isBlueTeam) {
                 follower.setPose(new Pose(0, 0, 0));
             } else if (gamepad2.y && !isBlueTeam) {
@@ -428,7 +416,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
             // Increment and Decrement Flywheel Speed
             // max speed is 40% of max rotation, min is 10% of min rotation.
             if (gamepad1.right_bumper && liftoffPoly >= 0.1 && adjustSpeed) {
-                adjustedSpeed += 100.0; //adjusted from 20
+                adjustedSpeed += 20.0;
                 adjustSpeed = false;
             }
             // Check if speed was adjusted.
@@ -437,7 +425,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
             }
 
             if (gamepad1.left_bumper && liftoffPoly >= 0.1 && adjustSpeed) {
-                adjustedSpeed -= 100.0; //adjusted from 20
+                adjustedSpeed -= 20.0;
                 adjustSpeed = false;
             }
             // Check if speed was adjusted.
@@ -445,9 +433,8 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
                 adjustSpeed = true;
             }
 
-            // Set nectar and pollen gate position
+            // Set nectar gate position
             gateNectar.setPosition(gateNectarPos);
-            //gatePollen.setPosition(gatePollenPos);
 
             // Set Intake power percentage
             intake.setPower(intakeSpeed);
