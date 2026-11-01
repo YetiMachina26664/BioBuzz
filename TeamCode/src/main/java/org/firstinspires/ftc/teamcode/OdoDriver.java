@@ -258,7 +258,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
             normalizedSensor.setGain(40);
             NormalizedRGBA colors = normalizedSensor.getNormalizedColors();
 
-            while (follower.pose() == null || follower.pose().x()<0.0||follower.pose().y()<0.0) {
+            while (follower.pose() == null || follower.pose().x()<-0.01f||follower.pose().y()<-0.01f) {
                 follower.setPose(getStartingPose(colors));
                 follower.update();
             }
