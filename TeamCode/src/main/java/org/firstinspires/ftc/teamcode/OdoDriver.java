@@ -27,7 +27,6 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
         private DcMotorEx flywheel = null;
         private DcMotor intake = null;
 
-        private Servo gatePollen = null;
         private Servo gateNectar = null;
 
         boolean aPressed;       // Tracks if A is toggled ON or OFF
@@ -66,7 +65,6 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
         double intakeSpeed = 0.0;
 
         double gateNectarPos = 0.0;
-        double gatePollenPos = 0.0;
 
         public static final double MAX_TICKS_PER_SECOND = 2840;
         public static final double MAX_TICKS_BELT = 2840;
@@ -213,7 +211,6 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 
             //Hardware map declarations
             gateNectar = hardwareMap.get(Servo.class, "gateNectar");
-            gatePollen = hardwareMap.get(Servo.class, "gatePollen");
             flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
             intake = hardwareMap.get(DcMotor.class, "intake");
 
@@ -383,12 +380,6 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
                 gateNectarPos = 0.0;
             }
 
-            if (bPressed) {
-                gatePollenPos = 0.7;
-            } else {
-                gatePollenPos = 0.0;
-            }
-
             if (gamepad2.y && isBlueTeam) {
                 follower.setPose(new Pose(0, 0, 0));
             } else if (gamepad2.y && !isBlueTeam) {
@@ -447,7 +438,6 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 
             // Set nectar and pollen gate position
             gateNectar.setPosition(gateNectarPos);
-            gatePollen.setPosition(gatePollenPos);
 
             // Set Intake power percentage
             intake.setPower(intakeSpeed);
