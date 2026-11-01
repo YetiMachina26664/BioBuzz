@@ -130,20 +130,17 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
             if (isBlueTeam && !isFieldFar) {
                 tgtY = Math.abs(BLUE_GOAL_CLOSE.y() - follower.pose().y());
                 tgtX = Math.abs(BLUE_GOAL_CLOSE.x() - follower.pose().x());
-                return Math.abs(((Math.PI)/2) - Math.atan2(tgtX, tgtY));
             } else if (isBlueTeam && isFieldFar){
                 tgtY = Math.abs(BLUE_GOAL_FAR.y() - follower.pose().y());
                 tgtX = Math.abs(BLUE_GOAL_FAR.x() - follower.pose().x());
-                return -Math.abs(((Math.PI)/2) - Math.atan2(tgtX, tgtY));
             } else if (!isBlueTeam && isFieldFar) {
                 tgtY = Math.abs(RED_GOAL_FAR.y() - follower.pose().y());
                 tgtX = Math.abs(RED_GOAL_FAR.x() - follower.pose().x());
-                return -Math.abs(((Math.PI)/2) - Math.atan2(tgtX, tgtY));
             } else {
                 tgtY = Math.abs(RED_GOAL_CLOSE.y() - follower.pose().y());
                 tgtX = Math.abs(RED_GOAL_CLOSE.x() - follower.pose().x());
-                return -Math.abs(((Math.PI)/2) - Math.atan2(tgtX, tgtY));
             }
+            return Math.abs(((Math.PI)/2) - Math.atan2(tgtX, tgtY));
         }
 
         //Calculation for the straightline distance between the robot and the goal
@@ -436,7 +433,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
                 adjustSpeed = true;
             }
 
-            // Set nectar and pollen gate position
+            // Set nectar gate position
             gateNectar.setPosition(gateNectarPos);
 
             // Set Intake power percentage
