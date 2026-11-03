@@ -19,12 +19,13 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
     @TeleOp(name="Odometry Driver", group="Linear OpMode")
     public class OdoDriver extends OpMode {
         private Follower follower;
+        public static Pose startingPose;
         private TelemetryManager telemetryM;
 
         private RevColorSensorV3 color;
 
         private DcMotorEx flywheel = null;
-        private DcMotorEx intake = null;
+        private DcMotor intake = null;
 
         private Servo gateNectar = null;
 
@@ -60,6 +61,9 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
         double liftoffPoly;
         double liftoffLin;
 
+        //Intake and Belt initial speeds
+        double intakeSpeed = 0.0;
+
         double gateNectarPos = 0.0;
 
         public static final double MAX_TICKS_PER_SECOND = 2840;
@@ -90,6 +94,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 	public static int[] blueCheck = {255,510,765};
 	public static int[] yellowCheck = {1530,2040,765};
 
+	// Change these values
 	// Locations for positions for starting locations
 	public Pose BLUE_START_FAR = new Pose(84.75,144, Math.toRadians(180));
 	public Pose BLUE_START_CLOSE = new Pose(84.75,0.0,Math.toRadians(180));
@@ -204,7 +209,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
             //Hardware map declarations
             gateNectar = hardwareMap.get(Servo.class, "gateNectar");
             flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
-            intake = hardwareMap.get(DcMotorEx.class, "intake");
+            intake = hardwareMap.get(DcMotor.class, "intake");
 
             //Zero power behaviors for Flywheels
             flywheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -254,7 +259,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
             NormalizedRGBA colors = normalizedSensor.getNormalizedColors();
 			follower.setPose(getStartingPose(colors));
             follower.update();
-            while (follower.pose() == null) {
+            while (follower.pose() == null ) {
                 follower.setPose(getStartingPose(colors));
                 follower.update();
             }
@@ -351,10 +356,21 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
             // --- ACTION LOGIC ---
 
             //determine if there is a greenLight to shoot
-            greenLight=(flywheel.getVelocity() >= liftoffPoly - negativeTol && flywheel.getVelocity() <= liftoffPoly + positiveTol && flywheel.getVelocity() >= liftoffPoly - negativeTol && flywheel.getVelocity() <= liftoffPoly + positiveTol);
+            if (flywheel.getVelocity() >= liftoffPoly - negativeTol && flywheel.getVelocity() <= liftoffPoly + positiveTol && flywheel.getVelocity() >= liftoffPoly - negativeTol && flywheel.getVelocity() <= liftoffPoly + positiveTol) {
+                greenLight = true;
+            } else {
+                greenLight = false;
+            }
 
             // Set intake speed.
-            intake.setVelocity(aPressed?500:0);
+            if (aPressed) {
+                intakeSpeed = 1.0;
+            } else if (greenLight) {
+                intakeSpeed = 0.5;
+            }
+            else {
+                intakeSpeed = 0.0;
+            }
 
             if (xPressed) {
                 gateNectarPos = 0.7;
@@ -362,8 +378,10 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
                 gateNectarPos = 0.0;
             }
 
-            if (gamepad2.y){
-                follower.setPose(getStartingPose(color.getNormalizedColors()));
+            if (gamepad2.y && isBlueTeam) {
+                follower.setPose(new Pose(0, 0, 0));
+            } else if (gamepad2.y && !isBlueTeam) {
+                follower.setPose(new Pose(141.5, 0, Math.toRadians(180)));
             }
 
             distFromGoal = getDist(follower);
@@ -419,6 +437,8 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
             // Set nectar gate position
             gateNectar.setPosition(gateNectarPos);
 
+            // Set Intake power percentage
+            intake.setPower(intakeSpeed);
 
             // Set flywheel velocity (LB = High power shot, RB = Low power shot)
             if (gamepad1.right_trigger > 0) {
@@ -431,8 +451,8 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
             }
             telemetry.addData("Pose","%4.1f, %4.1f", follower.pose().x(), follower.pose().y());
             telemetry.addData("Angle","%4.2f(degrees), %4.2f(radians)",Math.toDegrees(follower.pose().heading()), follower.pose().heading());
-            telemetry.addData("Intake","isActive:%s, Speed(rpm):%4.2f, Speed(tps):%4.2f",(intake.getVelocity()>0.0f) ? "True":"False", intake.getVelocity(),intake.getVelocity());
-            telemetry.addData("Flywheel","isActive:%s, Speed(rpm):%4.2f, Speed(tps):%4.2f",(flywheel.getVelocity()>0.0f) ? "True":"False", flywheel.getVelocity(), flywheel.getVelocity());
+            telemetry.addData("Intake","isActive:%s, Speed(rpm):%4.2f, Speed(tps):%4.2f",(intake.getPower()>0.0f) ? "True":"False", intakeSpeed, intakeSpeed);
+            telemetry.addData("Flywheel","isActive:%s, Speed(rpm):%4.2f, Speed(tps):%4.2f",(flywheel.getPower()>0.0f) ? "True":"False", flywheel.getVelocity(), flywheel.getVelocity());
             telemetry.addData("Team Color","%s",isBlueTeam ? "Blue":"Red");
             telemetry.addData("Field Side","%s", isFieldFar ? "Far":"Close");
             telemetry.addData("Goal","Distance:%4.1f,X:4.1f,Y:4.1f", distFromGoal, isBlueTeam ? (isFieldFar ? BLUE_GOAL_FAR.x():BLUE_GOAL_CLOSE.x()) : (isFieldFar ? RED_GOAL_FAR.x():RED_GOAL_CLOSE.x()), isBlueTeam ? (isFieldFar ? BLUE_GOAL_FAR.y():BLUE_GOAL_CLOSE.y()) : (isFieldFar ? RED_GOAL_FAR.y():RED_GOAL_CLOSE.y()));
