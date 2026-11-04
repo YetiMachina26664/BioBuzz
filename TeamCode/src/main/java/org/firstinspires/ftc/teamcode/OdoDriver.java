@@ -86,7 +86,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
         boolean isBlueTeam = false;
         boolean isFieldFar = false;
 
-	public static final int colorTolerence = 245;
+	public static final int colorTolerence = 1000;
 	// Change these values
 	// Colours to Check against in RGB
 	public static int[] redCheck = {799245,419690,250390};
@@ -167,14 +167,22 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
         public double powerRegressionLin(double x) {
             return (3.0058 * x) + 756.46;
         }
+
+        public double toTPS6000(double rpm) {
+            return (MAX_TICKS_PER_SECOND / 28) * 60;
+        }
+
+        public double toRPM6000(double tps) {
+            return (tps/28) * 60;
+        }
 		public boolean compareColorArrays(int[] rgb,int[] colorCheck){
 			return (((rgb[0]>(colorCheck[0]-colorTolerence))&&(rgb[0]<(colorCheck[0]+colorTolerence)))&&
 			((rgb[1]>(colorCheck[1]-colorTolerence))&&(rgb[1]<(colorCheck[1]+colorTolerence)))&&
 			((rgb[2]>(colorCheck[2]-colorTolerence))&&(rgb[2]<(colorCheck[2]+colorTolerence))));
 		}
-        public Pose getStartingPose(NormalizedRGBA colors) {
+        public Pose getStartingPose() {
 		// Get RGB values
-		int[] rgb={(int) (colors.red * 255),(int) (colors.green * 255),(int) (colors.blue * 255)};
+		int[] rgb={(int) (color.red() * 255),(int) (color.green() * 255),(int) (color.blue() * 255)};
 		// Set isBlueTeam to false just in case it is on red team
 		isBlueTeam=false;
 		// Check RGB values against red colour to print
@@ -254,21 +262,18 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
         }
 
         public void init_loop() {
-            NormalizedColorSensor normalizedSensor = color;
-            normalizedSensor.setGain(40);
-            NormalizedRGBA colors = normalizedSensor.getNormalizedColors();
-			follower.setPose(getStartingPose(colors));
+			follower.setPose(getStartingPose());
             follower.update();
             while (follower.pose() == null ) {
-                follower.setPose(getStartingPose(colors));
+                follower.setPose(getStartingPose());
                 follower.update();
             }
 
             follower.update();
 
-            telemetry.addData("Red", colors.red * 255);
-            telemetry.addData("Green", colors.green * 255);
-            telemetry.addData("Blue", colors.blue * 255);
+            telemetry.addData("Red", color.red() * 255);
+            telemetry.addData("Green", color.green() * 255);
+            telemetry.addData("Blue", color.blue() * 255);
             telemetry.addData("Starting Pose", follower.pose());
             telemetry.update();
         }
@@ -290,7 +295,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
         public void loop() {
             double forward = -gamepad1.left_stick_y;
             double lateral = gamepad1.left_stick_x;
-            double turn = gamepad1.right_stick_x;
+            double turn = -gamepad1.right_stick_x;
 
             follower.update();
             telemetryM.update();
@@ -364,11 +369,12 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 
             // Set intake speed.
             if (aPressed) {
-                intakeSpeed = 1.0;
+                intakeSpeed = 0.9;
             } else if (greenLight) {
-                intakeSpeed = 0.5;
-            }
-            else {
+                intakeSpeed = 0.7;
+            } else if (bPressed) {
+                intakeSpeed = -0.5;
+            } else {
                 intakeSpeed = 0.0;
             }
 
@@ -442,17 +448,17 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 
             // Set flywheel velocity (LB = High power shot, RB = Low power shot)
             if (gamepad1.right_trigger > 0) {
-                flywheel.setVelocity(liftoffPoly);
+                flywheel.setVelocity(toTPS6000(1400));
             } else if (gamepad1.left_trigger > 0) {
-                flywheel.setVelocity(1000 + adjustedSpeed);
+                flywheel.setVelocity(100 + adjustedSpeed);
             } else { // Set -100 by default.
                 flywheel.setVelocity(0);
                 greenLight = false;
             }
             telemetry.addData("Pose","%4.1f, %4.1f", follower.pose().x(), follower.pose().y());
             telemetry.addData("Angle","%4.2f(degrees), %4.2f(radians)",Math.toDegrees(follower.pose().heading()), follower.pose().heading());
-            telemetry.addData("Intake","isActive:%s, Speed(rpm):%4.2f, Speed(tps):%4.2f",(intake.getPower()>0.0f) ? "True":"False", intakeSpeed, intakeSpeed);
-            telemetry.addData("Flywheel","isActive:%s, Speed(rpm):%4.2f, Speed(tps):%4.2f",(flywheel.getPower()>0.0f) ? "True":"False", flywheel.getVelocity(), flywheel.getVelocity());
+            telemetry.addData("Intake","isActive:%s, Speed(rpm): %4.2f, Speed(tps): %4.2f",(intake.getPower()>0.0f) ? "True":"False", intakeSpeed, intakeSpeed);
+            telemetry.addData("Flywheel","isActive:%s, Speed(rpm): %4.2f, Speed(tps): %4.2f",(flywheel.getPower()>0.0f) ? "True":"False", toRPM6000(flywheel.getVelocity()), toRPM6000(flywheel.getVelocity()));
             telemetry.addData("Team Color","%s",isBlueTeam ? "Blue":"Red");
             telemetry.addData("Field Side","%s", isFieldFar ? "Far":"Close");
             telemetry.addData("Goal","Distance:%4.1f,X:4.1f,Y:4.1f", distFromGoal, isBlueTeam ? (isFieldFar ? BLUE_GOAL_FAR.x():BLUE_GOAL_CLOSE.x()) : (isFieldFar ? RED_GOAL_FAR.x():RED_GOAL_CLOSE.x()), isBlueTeam ? (isFieldFar ? BLUE_GOAL_FAR.y():BLUE_GOAL_CLOSE.y()) : (isFieldFar ? RED_GOAL_FAR.y():RED_GOAL_CLOSE.y()));
