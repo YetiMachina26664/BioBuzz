@@ -86,7 +86,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
         boolean isBlueTeam = false;
         boolean isFieldFar = false;
 
-	public static final int colorTolerence = 245;
+	public static final int colorTolerence = 1000;
 	// Change these values
 	// Colours to Check against in RGB
 	public static int[] redCheck = {799245,419690,250390};
@@ -172,9 +172,9 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 			((rgb[1]>(colorCheck[1]-colorTolerence))&&(rgb[1]<(colorCheck[1]+colorTolerence)))&&
 			((rgb[2]>(colorCheck[2]-colorTolerence))&&(rgb[2]<(colorCheck[2]+colorTolerence))));
 		}
-        public Pose getStartingPose(NormalizedRGBA colors) {
+        public Pose getStartingPose() {
 		// Get RGB values
-		int[] rgb={(int) (colors.red * 255),(int) (colors.green * 255),(int) (colors.blue * 255)};
+		int[] rgb={(int) (colors.red() * 255),(int) (colors.green() * 255),(int) (colors.blue() * 255)};
 		// Set isBlueTeam to false just in case it is on red team
 		isBlueTeam=false;
 		// Check RGB values against red colour to print
@@ -254,21 +254,18 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
         }
 
         public void init_loop() {
-            NormalizedColorSensor normalizedSensor = color;
-            normalizedSensor.setGain(40);
-            NormalizedRGBA colors = normalizedSensor.getNormalizedColors();
-			follower.setPose(getStartingPose(colors));
+			follower.setPose(getStartingPose());
             follower.update();
             while (follower.pose() == null ) {
-                follower.setPose(getStartingPose(colors));
+                follower.setPose(getStartingPose());
                 follower.update();
             }
 
             follower.update();
 
-            telemetry.addData("Red", colors.red * 255);
-            telemetry.addData("Green", colors.green * 255);
-            telemetry.addData("Blue", colors.blue * 255);
+            telemetry.addData("Red", color.red() * 255);
+            telemetry.addData("Green", color.green() * 255);
+            telemetry.addData("Blue", color.blue() * 255);
             telemetry.addData("Starting Pose", follower.pose());
             telemetry.update();
         }
