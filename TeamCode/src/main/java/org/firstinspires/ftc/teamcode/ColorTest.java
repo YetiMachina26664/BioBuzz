@@ -14,9 +14,9 @@ public class ColorTest extends OpMode {
     }
 
     public void loop() {
-        telemetry.addData("Red: ", color.red() * 255);
-        telemetry.addData("Green: ", color.green() * 255);
-        telemetry.addData("Blue: ", color.blue() * 255);
+        telemetry.addData("Red: ", (int)(color.red() * 255));
+        telemetry.addData("Green: ", (int)(color.green() * 255));
+        telemetry.addData("Blue: ", (int)(color.blue() * 255));
         telemetry.update();
     }
 }
