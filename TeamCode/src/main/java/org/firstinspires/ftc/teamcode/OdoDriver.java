@@ -182,7 +182,11 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 		}
         public Pose getStartingPose() {
 		// Get RGB values
+<<<<<<< HEAD
 		int[] rgb={(int) (color.red() * 255),(int) (color.green() * 255),(int) (color.blue() * 255)};
+=======
+		int[] rgb={(int) (colors.red() * 255),(int) (colors.green() * 255),(int) (colors.blue() * 255)};
+>>>>>>> 799bd20fa21d2157b823092ab79fa7bbd4084736
 		// Set isBlueTeam to false just in case it is on red team
 		isBlueTeam=false;
 		// Check RGB values against red colour to print
