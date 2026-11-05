@@ -35,7 +35,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
         boolean yPressed;       // Tracks if Y is toggled ON or OFF
         boolean previousYState; // Tracks the button state from the previous loop cycle
 
-        boolean xPressed = true;       // Tracks if X is toggled ON or OFF, start with up position
+        boolean xPressed = false;       // Tracks if X is toggled ON or OFF, start with closed position
         boolean previousXState; // Tracks the button state from the previous loop cycle
 
         boolean bPressed;       // Tracks if B is toggled ON or OFF
@@ -169,7 +169,8 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
         }
 
         public double toTPS6000(double rpm) {
-            return (MAX_TICKS_PER_SECOND / 28) * 60;
+            //return (MAX_TICKS_PER_SECOND / 28) * 60;
+            return (rpm *28) / 60;
         }
 
         public double toRPM6000(double tps) {
@@ -182,11 +183,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 		}
         public Pose getStartingPose() {
 		// Get RGB values
-<<<<<<< HEAD
 		int[] rgb={(int) (color.red() * 255),(int) (color.green() * 255),(int) (color.blue() * 255)};
-=======
-		int[] rgb={(int) (colors.red() * 255),(int) (colors.green() * 255),(int) (colors.blue() * 255)};
->>>>>>> 799bd20fa21d2157b823092ab79fa7bbd4084736
 		// Set isBlueTeam to false just in case it is on red team
 		isBlueTeam=false;
 		// Check RGB values against red colour to print
@@ -289,6 +286,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
             double lateral = gamepad1.left_stick_x;
             double turn = gamepad1.right_stick_x;
 
+            gateNectar.setPosition(gateNectarPos);
             follower.manual(forward, lateral, turn);
             follower.update();
         }
@@ -382,9 +380,10 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
                 intakeSpeed = 0.0;
             }
 
-            if (xPressed) {
+            // Nectar Gate control: Y = Open Gate (0.7), X = Close Gate (0.0)
+            if (gamepad1.y) {
                 gateNectarPos = 0.7;
-            } else {
+            } else if (gamepad1.x) {
                 gateNectarPos = 0.0;
             }
 
@@ -452,9 +451,9 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 
             // Set flywheel velocity (LB = High power shot, RB = Low power shot)
             if (gamepad1.right_trigger > 0) {
-                flywheel.setVelocity(toTPS6000(1400));
+                flywheel.setVelocity(toTPS6000(1000));
             } else if (gamepad1.left_trigger > 0) {
-                flywheel.setVelocity(100 + adjustedSpeed);
+                flywheel.setVelocity(toTPS6000(1000) + adjustedSpeed);
             } else { // Set -100 by default.
                 flywheel.setVelocity(0);
                 greenLight = false;
@@ -462,7 +461,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
             telemetry.addData("Pose","%4.1f, %4.1f", follower.pose().x(), follower.pose().y());
             telemetry.addData("Angle","%4.2f(degrees), %4.2f(radians)",Math.toDegrees(follower.pose().heading()), follower.pose().heading());
             telemetry.addData("Intake","isActive:%s, Speed(rpm): %4.2f, Speed(tps): %4.2f",(intake.getPower()>0.0f) ? "True":"False", intakeSpeed, intakeSpeed);
-            telemetry.addData("Flywheel","isActive:%s, Speed(rpm): %4.2f, Speed(tps): %4.2f",(flywheel.getPower()>0.0f) ? "True":"False", toRPM6000(flywheel.getVelocity()), toRPM6000(flywheel.getVelocity()));
+            telemetry.addData("Flywheel","isActive:%s, Speed(rpm): %4.2f, Speed(tps): %4.2f",(flywheel.getPower()>0.0f) ? "True":"False", toRPM6000(flywheel.getVelocity()), flywheel.getVelocity());
             telemetry.addData("Team Color","%s",isBlueTeam ? "Blue":"Red");
             telemetry.addData("Field Side","%s", isFieldFar ? "Far":"Close");
             telemetry.addData("Goal","Distance:%4.1f,X:4.1f,Y:4.1f", distFromGoal, isBlueTeam ? (isFieldFar ? BLUE_GOAL_FAR.x():BLUE_GOAL_CLOSE.x()) : (isFieldFar ? RED_GOAL_FAR.x():RED_GOAL_CLOSE.x()), isBlueTeam ? (isFieldFar ? BLUE_GOAL_FAR.y():BLUE_GOAL_CLOSE.y()) : (isFieldFar ? RED_GOAL_FAR.y():RED_GOAL_CLOSE.y()));
