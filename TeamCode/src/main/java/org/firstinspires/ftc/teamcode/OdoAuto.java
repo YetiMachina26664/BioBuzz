@@ -2,12 +2,18 @@ package org.firstinspires.ftc.teamcode;
 
 import com.pedropathing.api.PoseFactory;
 import com.pedropathing.follower.Follower;
+import com.pedropathing.ivy.Command;
+import com.pedropathing.ivy.Scheduler;
 import com.pedropathing.math.Pose;
 import com.pedropathing.paths.Path;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import static com.pedropathing.api.Paths.line;
+import static com.pedropathing.ivy.Scheduler.schedule;
+import static com.pedropathing.ivy.groups.Groups.sequential;
+import static com.pedropathing.ivy.pedro.PedroCommands.follow;
+import static com.pedropathing.ivy.pedro.PedroCommands.hold;
 
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 
@@ -20,35 +26,35 @@ public class OdoAuto extends OpMode {
     private final Pose startPose = poseFactory.of(0, 0, 0);
     private final Pose forwardPose = poseFactory.of(30, 0, 0);
 
-    private Path moveForwardPath;
+    private Path moveForwardPath() {
+        return line(startPose, forwardPose).constant(0);
+    }
+
+    private Command autoRoutine() {
+        return sequential(
+                follow(follower, moveForwardPath()),
+                hold(follower, forwardPose)
+        );
+    }
 
     @Override
     public void init() {
+        Scheduler.reset();
+
         follower = Constants.create(hardwareMap);
         follower.setPose(startPose);
-
-        // Build a straight-line path from startPose to forwardPose maintaining 0 degree heading
-        moveForwardPath = line(startPose, forwardPose).constant(0);
-
-        follower.update();
     }
 
     @Override
     public void start() {
         follower.setPose(startPose);
-        follower.follow(moveForwardPath);
+        schedule(autoRoutine());
     }
 
     @Override
     public void loop() {
         follower.update();
-
-        // When the follower finishes following the forward path, hold the target pose so the robot stops
-        if (!follower.isBusy()) {
-            follower.hold(forwardPose);
-        } else {
-            follower.follow(moveForwardPath);
-        }
+        Scheduler.execute();
 
         telemetry.addData("X", "%4.2f in", follower.pose().x());
         telemetry.addData("Y", "%4.2f in", follower.pose().y());
