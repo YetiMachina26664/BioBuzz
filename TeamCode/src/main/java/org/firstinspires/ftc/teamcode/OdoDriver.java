@@ -431,7 +431,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
             // Increment and Decrement Flywheel Speed
             // max speed is 40% of max rotation, min is 10% of min rotation.
             if (gamepad1.right_bumper && adjustSpeed) {
-                adjustedSpeed += toTPS6000(50);
+                adjustedSpeed += toTPS6000(25);
                 adjustSpeed = false;
             }
             // Check if speed was adjusted.
@@ -441,7 +441,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 
             //if (gamepad1.left_bumper && liftoffPoly >= 0.1 && adjustSpeed) {
             if (gamepad1.left_bumper && adjustSpeed) {
-                adjustedSpeed -= toTPS6000(50);
+                adjustedSpeed -= toTPS6000(25);
                 adjustSpeed = false;
             }
             // Check if speed was adjusted.
@@ -455,9 +455,9 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
             // Set flywheel velocity (LB = High power shot, RB = Low power shot)
             double targetFlywheelTicksPerSecond;
             if (gamepad1.right_trigger > 0) {
-                targetFlywheelTicksPerSecond = toTPS6000(3500) + adjustedSpeed;
+                targetFlywheelTicksPerSecond = toTPS6000(3425) + adjustedSpeed;
             } else if (gamepad1.left_trigger > 0) {
-                targetFlywheelTicksPerSecond = toTPS6000(3500)+adjustedSpeed;
+                targetFlywheelTicksPerSecond = toTPS6000(3425)+adjustedSpeed;
             } else { // Set -100 by default.
                 targetFlywheelTicksPerSecond = 0;
                 //greenLight = false;
