@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -52,7 +53,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 
         boolean previousDPadRightState;  //Tracks the button state from the previous loop cycle
         boolean dPadRightToggle;         //Tracks if D-Pad Up is toggled ON or OFF
-        boolean greenLight;              //flywheel speeds meet requirements to shoot
+        //boolean greenLight;              //flywheel speeds meet requirements to shoot
 
         boolean adjustSpeed;         //Checks whether or not speed was adjusted
         boolean autoAimActive;     //true while we are rotating to tgtTheta
@@ -219,19 +220,23 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
             gateNectar = hardwareMap.get(Servo.class, "gateNectar");
             flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
             intake = hardwareMap.get(DcMotor.class, "intake");
+            intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            intake.setPower(0.0);
 
             //Zero power behaviors for Flywheels
             flywheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
             // Set Flywheel modes for velocity running instead of power percentage
-            flywheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            flywheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            //flywheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            flywheel.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+            flywheel.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
             //comment out set modes for the fly wheels above if we want to use the PID for the flywheels
             //PIDFCoefficients newPID = new PIDFCoefficients(3.0,0.8,0.0,10.0);
             //lFlywheel.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, newPID);
             //rFlywheel.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, newPID);
 
-            //flywheel.setDirection(DcMotorSimple.Direction.REVERSE);
+            flywheel.setDirection(DcMotorSimple.Direction.REVERSE);
 
             aPressed = false;       // Tracks if A is toggled ON or OFF
             previousAState = false; // Tracks the button state from the previous loop cycle
@@ -259,7 +264,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
             autoAimActive = false;
 
             adjustSpeed = true;         //Checks whether or not speed was adjusted
-            greenLight = false;         //Permission to shoot
+            //greenLight = false;         //Permission to shoot
         }
 
         public void init_loop() {
@@ -363,17 +368,17 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
             // --- ACTION LOGIC ---
 
             //determine if there is a greenLight to shoot
-            if (flywheel.getVelocity() >= liftoffPoly - negativeTol && flywheel.getVelocity() <= liftoffPoly + positiveTol && flywheel.getVelocity() >= liftoffPoly - negativeTol && flywheel.getVelocity() <= liftoffPoly + positiveTol) {
-                greenLight = true;
-            } else {
-                greenLight = false;
-            }
+            //if (flywheel.getVelocity() >= liftoffPoly - negativeTol && flywheel.getVelocity() <= liftoffPoly + positiveTol && flywheel.getVelocity() >= liftoffPoly - negativeTol && flywheel.getVelocity() <= liftoffPoly + positiveTol) {
+            //    greenLight = true;
+            //} else {
+            //    greenLight = false;
+            //}
 
             // Set intake speed.
             if (aPressed) {
-                intakeSpeed = 0.9;
-            } else if (greenLight) {
-                intakeSpeed = 0.7;
+                intakeSpeed = 0.6;
+            //} else if (greenLight) {
+            //    intakeSpeed = 0.7;
             } else if (bPressed) {
                 intakeSpeed = -0.5;
             } else {
@@ -425,8 +430,8 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 
             // Increment and Decrement Flywheel Speed
             // max speed is 40% of max rotation, min is 10% of min rotation.
-            if (gamepad1.right_bumper && liftoffPoly >= 0.1 && adjustSpeed) {
-                adjustedSpeed += 20.0;
+            if (gamepad1.right_bumper && adjustSpeed) {
+                adjustedSpeed += toTPS6000(25);
                 adjustSpeed = false;
             }
             // Check if speed was adjusted.
@@ -434,8 +439,9 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
                 adjustSpeed = true;
             }
 
-            if (gamepad1.left_bumper && liftoffPoly >= 0.1 && adjustSpeed) {
-                adjustedSpeed -= 20.0;
+            //if (gamepad1.left_bumper && liftoffPoly >= 0.1 && adjustSpeed) {
+            if (gamepad1.left_bumper && adjustSpeed) {
+                adjustedSpeed -= toTPS6000(25);
                 adjustSpeed = false;
             }
             // Check if speed was adjusted.
@@ -443,25 +449,39 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
                 adjustSpeed = true;
             }
 
-            // Set nectar gate position
-            gateNectar.setPosition(gateNectarPos);
-
             // Set Intake power percentage
             intake.setPower(intakeSpeed);
 
             // Set flywheel velocity (LB = High power shot, RB = Low power shot)
+            double targetFlywheelTicksPerSecond;
             if (gamepad1.right_trigger > 0) {
-                flywheel.setVelocity(toTPS6000(1000));
+                targetFlywheelTicksPerSecond = toTPS6000(3425) + adjustedSpeed;
             } else if (gamepad1.left_trigger > 0) {
-                flywheel.setVelocity(toTPS6000(1000) + adjustedSpeed);
+                targetFlywheelTicksPerSecond = toTPS6000(3425)+adjustedSpeed;
             } else { // Set -100 by default.
-                flywheel.setVelocity(0);
-                greenLight = false;
+                targetFlywheelTicksPerSecond = 0;
+                //greenLight = false;
             }
+            flywheel.setVelocity(targetFlywheelTicksPerSecond);
+            double measuredFlywheelTicksPerSecond = flywheel.getVelocity();
+            if (gamepad1.right_trigger <= 0 && gamepad1.left_trigger <= 0
+                    && measuredFlywheelTicksPerSecond == 0.0) {
+                gateNectarPos = 0.0;
+            }
+            gateNectar.setPosition(gateNectarPos);
             telemetry.addData("Pose","%4.1f, %4.1f", follower.pose().x(), follower.pose().y());
             telemetry.addData("Angle","%4.2f(degrees), %4.2f(radians)",Math.toDegrees(follower.pose().heading()), follower.pose().heading());
-            telemetry.addData("Intake","isActive:%s, Speed(rpm): %4.2f, Speed(tps): %4.2f",(intake.getPower()>0.0f) ? "True":"False", intakeSpeed, intakeSpeed);
-            telemetry.addData("Flywheel","isActive:%s, Speed(rpm): %4.2f, Speed(tps): %4.2f",(flywheel.getPower()>0.0f) ? "True":"False", toRPM6000(flywheel.getVelocity()), flywheel.getVelocity());
+            telemetry.addData("Intake commanded on", intake.getPower() != 0.0);
+            telemetry.addData("Intake power command", "%.1f%%", intake.getPower() * 100.0);
+            telemetry.addData("Intake mode", intake.getMode());
+            telemetry.addData("Intake toggles", "A: %b, B: %b", aPressed, bPressed);
+            telemetry.addData("Flywheel commanded on", targetFlywheelTicksPerSecond != 0);
+            telemetry.addData("Flywheel target ticks/sec", "%.2f", targetFlywheelTicksPerSecond);
+            telemetry.addData("Flywheel target RPM", "%.2f", toRPM6000(targetFlywheelTicksPerSecond));
+            telemetry.addData("Flywheel adjustment RPM", "%.2f", toRPM6000(adjustedSpeed));
+            telemetry.addData("Flywheel measured ticks/sec", "%.2f", measuredFlywheelTicksPerSecond);
+            telemetry.addData("Flywheel motor RPM (28 ticks/rev)", "%.2f", toRPM6000(measuredFlywheelTicksPerSecond));
+            telemetry.addData("Flywheel encoder ticks", flywheel.getCurrentPosition());
             telemetry.addData("Team Color","%s",isBlueTeam ? "Blue":"Red");
             telemetry.addData("Field Side","%s", isFieldFar ? "Far":"Close");
             telemetry.addData("Goal","Distance:%4.1f,X:4.1f,Y:4.1f", distFromGoal, isBlueTeam ? (isFieldFar ? BLUE_GOAL_FAR.x():BLUE_GOAL_CLOSE.x()) : (isFieldFar ? RED_GOAL_FAR.x():RED_GOAL_CLOSE.x()), isBlueTeam ? (isFieldFar ? BLUE_GOAL_FAR.y():BLUE_GOAL_CLOSE.y()) : (isFieldFar ? RED_GOAL_FAR.y():RED_GOAL_CLOSE.y()));
