@@ -27,10 +27,14 @@ public class Constants {
     }
 
     public static MecanumConfig drivetrainConfig = new MecanumConfig(c -> {
-        c.frontLeftName.set("left_front");
-        c.frontRightName.set("right_front");
-        c.backLeftName.set("left_back");
-        c.backRightName.set("right_back");
+        // Front/back names are intentionally swapped: on this robot the configured motors
+        // strafe opposite to Pedro's convention (+strafe = left, +Y = left), which caused
+        // the follower's lateral correction to run away. Swapping front<->back per side
+        // inverts strafe only, leaving forward and turn unchanged.
+        c.frontLeftName.set("left_back");
+        c.frontRightName.set("right_back");
+        c.backLeftName.set("left_front");
+        c.backRightName.set("right_front");
 
         c.frontLeftDirection.set(DcMotorSimple.Direction.REVERSE);
         c.frontRightDirection.set(DcMotorSimple.Direction.FORWARD);

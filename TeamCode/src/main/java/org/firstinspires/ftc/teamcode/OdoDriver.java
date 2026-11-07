@@ -288,7 +288,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
         @Override
         public void start() {
             double forward = -gamepad1.left_stick_y;
-            double lateral = gamepad1.left_stick_x;
+            double lateral = -gamepad1.left_stick_x; // Pedro: +strafe = left
             double turn = gamepad1.right_stick_x;
 
             gateNectar.setPosition(gateNectarPos);
@@ -301,7 +301,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
         @Override
         public void loop() {
             double forward = -gamepad1.left_stick_y;
-            double lateral = gamepad1.left_stick_x;
+            double lateral = -gamepad1.left_stick_x; // Pedro: +strafe = left
             double turn = -gamepad1.right_stick_x;
 
             follower.update();
