@@ -10,7 +10,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -90,10 +89,10 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 	public static final int colorTolerence = 1000;
 	// Change these values
 	// Colours to Check against in RGB
-	public static int[] redCheck = {799245,419690,250390};
-	public static int[] greenCheck = {359550,968490,635460};
-	public static int[] blueCheck = {231285,654630,1390260};
-	public static int[] yellowCheck = {1066665,1602420,591090};
+	public static int[] redCheck = {799245, 419690, 250390};
+	public static int[] greenCheck = {359550, 968490, 635460};
+	public static int[] blueCheck = {231285, 654630, 1390260};
+	public static int[] yellowCheck = {1066665, 1602420, 591090};
 
 	// Change these values
 	// Locations for positions for starting locations
@@ -177,29 +176,33 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
         public double toRPM6000(double tps) {
             return (tps/28) * 60;
         }
-		public boolean compareColorArrays(int[] rgb,int[] colorCheck){
-			return (((rgb[0]>(colorCheck[0]-colorTolerence))&&(rgb[0]<(colorCheck[0]+colorTolerence)))&&
-			((rgb[1]>(colorCheck[1]-colorTolerence))&&(rgb[1]<(colorCheck[1]+colorTolerence)))&&
-			((rgb[2]>(colorCheck[2]-colorTolerence))&&(rgb[2]<(colorCheck[2]+colorTolerence))));
+		public boolean compareColorArrays(int[] rgb, int[] colorCheck){
+			return (((rgb[0] > (colorCheck[0] - colorTolerence)) && (rgb[0] < (colorCheck[0] + colorTolerence))) &&
+			        ((rgb[1] > (colorCheck[1] - colorTolerence)) && (rgb[1] < (colorCheck[1] + colorTolerence))) &&
+			        ((rgb[2] > (colorCheck[2] - colorTolerence)) && (rgb[2] < (colorCheck[2] + colorTolerence))));
 		}
-        public Pose getStartingPose() {
-		// Get RGB values
-		int[] rgb={(int) (color.red() * 255),(int) (color.green() * 255),(int) (color.blue() * 255)};
-		// Set isBlueTeam to false just in case it is on red team
-		isBlueTeam=false;
-		// Check RGB values against red colour to print
-		// Check to see if each channel is in tolerances(10 on each side)
-		if(compareColorArrays(rgb,redCheck)) return RED_START_CLOSE;
-
-		if(compareColorArrays(rgb,yellowCheck)) return RED_START_FAR;
-
-		// Assume Blue team because
-		isBlueTeam=true;
-		if(compareColorArrays(rgb,blueCheck)) return BLUE_START_CLOSE;
-
-		if(compareColorArrays(rgb,greenCheck)) return BLUE_START_FAR;
-
-		return new Pose(-1.0,-1.0);
+        public Pose getStartingPose(RevColorSensorV3 colorSensor) {
+            NormalizedRGBA color;
+            color = colorSensor.getNormalizedColors();
+		    // Get RGB values
+		    int[] rgb= {(int) (color.red * 255), (int) (color.green * 255), (int) (color.blue * 255)};
+		    // Check RGB values against red colour to print
+		    // Check to see if each channel is in tolerances(10 on each side)
+		    if (compareColorArrays(rgb, redCheck)) {
+                isBlueTeam = false;
+                return RED_START_CLOSE;
+            } else if (compareColorArrays(rgb, yellowCheck)) {
+                isBlueTeam = false;
+                return RED_START_FAR;
+            } else if (compareColorArrays(rgb, blueCheck)) {
+                isBlueTeam = true;
+                return BLUE_START_CLOSE;
+            } else if (compareColorArrays(rgb, greenCheck)) {
+                isBlueTeam = true;
+                return BLUE_START_FAR;
+            } else {
+                return new Pose(0,0,0);
+            }
         }
 
         @Override
@@ -268,18 +271,19 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
         }
 
         public void init_loop() {
-			follower.setPose(getStartingPose());
-            follower.update();
-            while (follower.pose() == null ) {
-                follower.setPose(getStartingPose());
+            NormalizedRGBA colorsNormalized;
+            colorsNormalized = color.getNormalizedColors();
+
+            do {
+                follower.setPose(getStartingPose(color));
                 follower.update();
-            }
+            } while (follower.pose() == null);
 
             follower.update();
 
-            telemetry.addData("Red", color.red() * 255);
-            telemetry.addData("Green", color.green() * 255);
-            telemetry.addData("Blue", color.blue() * 255);
+            telemetry.addData("Red", colorsNormalized.red * 255);
+            telemetry.addData("Green", colorsNormalized.green * 255);
+            telemetry.addData("Blue", colorsNormalized.blue * 255);
             telemetry.addData("Starting Pose", follower.pose());
             telemetry.update();
         }
@@ -288,8 +292,8 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
         @Override
         public void start() {
             double forward = -gamepad1.left_stick_y;
-            double lateral = -gamepad1.left_stick_x; // Pedro: +strafe = left
-            double turn = gamepad1.right_stick_x;
+            double lateral = gamepad1.left_stick_x; // Pedro: +strafe = left
+            double turn = -gamepad1.right_stick_x;
 
             gateNectar.setPosition(gateNectarPos);
             follower.manual(forward, lateral, turn);
@@ -301,7 +305,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
         @Override
         public void loop() {
             double forward = -gamepad1.left_stick_y;
-            double lateral = -gamepad1.left_stick_x; // Pedro: +strafe = left
+            double lateral = gamepad1.left_stick_x; // Pedro: +strafe = left
             double turn = -gamepad1.right_stick_x;
 
             follower.update();
@@ -326,8 +330,8 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 
             // --- TOGGLE LOGIC ---
             // This detects a single button press event for each button.
-            if (gamepad1.a && !previousAState) { aPressed = !aPressed; }
-            previousAState = gamepad1.a;
+            if (gamepad2.a && !previousAState) { aPressed = !aPressed; }
+            previousAState = gamepad2.a;
 
             if (gamepad1.y && !previousYState) { yPressed = !yPressed; }
             previousYState = gamepad1.y;
@@ -335,8 +339,8 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
             if (gamepad1.x && !previousXState) { xPressed = !xPressed; }
             previousXState = gamepad1.x;
 
-            if (gamepad1.b && !previousBState) { bPressed = !bPressed; }
-            previousBState = gamepad1.b;
+            if (gamepad2.b && !previousBState) { bPressed = !bPressed; }
+            previousBState = gamepad2.b;
 
             if (gamepad1.dpad_down && !previousDPadDownState) { dPadDownToggle = !dPadDownToggle; }
             previousDPadDownState = gamepad1.dpad_down;
@@ -454,20 +458,23 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 
             // Set flywheel velocity (LB = High power shot, RB = Low power shot)
             double targetFlywheelTicksPerSecond;
-            if (gamepad1.right_trigger > 0) {
-                targetFlywheelTicksPerSecond = toTPS6000(3425) + adjustedSpeed;
+            if (gamepad2.right_trigger > 0) {
+                targetFlywheelTicksPerSecond = toTPS6000(3400) + adjustedSpeed;
             } else if (gamepad1.left_trigger > 0) {
-                targetFlywheelTicksPerSecond = toTPS6000(3425)+adjustedSpeed;
+                targetFlywheelTicksPerSecond = toTPS6000(-300) - adjustedSpeed;
             } else { // Set -100 by default.
                 targetFlywheelTicksPerSecond = 0;
                 //greenLight = false;
             }
+
             flywheel.setVelocity(targetFlywheelTicksPerSecond);
             double measuredFlywheelTicksPerSecond = flywheel.getVelocity();
-            if (gamepad1.right_trigger <= 0 && gamepad1.left_trigger <= 0
+
+            if (gamepad2.right_trigger <= 0 && gamepad2.left_trigger <= 0
                     && measuredFlywheelTicksPerSecond == 0.0) {
                 gateNectarPos = 0.0;
             }
+
             gateNectar.setPosition(gateNectarPos);
             telemetry.addData("Pose","%4.1f, %4.1f", follower.pose().x(), follower.pose().y());
             telemetry.addData("Angle","%4.2f(degrees), %4.2f(radians)",Math.toDegrees(follower.pose().heading()), follower.pose().heading());

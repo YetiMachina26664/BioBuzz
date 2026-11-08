@@ -1,31 +1,33 @@
 package org.firstinspires.ftc.teamcode;
 
+import static com.pedropathing.api.Paths.*;
 import com.pedropathing.api.Paths;
+
 import com.pedropathing.api.PoseFactory;
 import com.pedropathing.follower.Follower;
-import com.pedropathing.ivy.Command;
-import com.pedropathing.ivy.Scheduler;
 import com.pedropathing.math.Pose;
 import com.pedropathing.paths.Path;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-
+import com.pedropathing.ivy.Command;
+import com.pedropathing.ivy.Scheduler;
 import static com.pedropathing.ivy.Scheduler.schedule;
+import static com.pedropathing.ivy.commands.Commands.*;
 import static com.pedropathing.ivy.groups.Groups.sequential;
 import static com.pedropathing.ivy.pedro.PedroCommands.follow;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 
 @Autonomous(name = "AutoPath", group = "Autonomous")
-public class OdoAutoRedClose extends LinearOpMode {
+public class AutoPath extends LinearOpMode {
 
     private Follower follower;
 
     private final PoseFactory poseFactory = PoseFactory.degrees();
 
-    private final Pose start2 = poseFactory.of(56, 8, 90);
-    private final Pose path1 = poseFactory.of(27.4266, 38.2341, 133.3824);
-    private final Pose point2 = poseFactory.of(7.2918, 101.055, 110);
+    private final Pose start = poseFactory.of(33, 8, 90);
+    private final Pose path1 = poseFactory.of(33, 95, 90);
+    private final Pose point2 = poseFactory.of(14, 95, 90);
 
     // Autonomous routine
     public Command autoRoutine() {
@@ -39,7 +41,7 @@ public class OdoAutoRedClose extends LinearOpMode {
     public void runOpMode() {
         Scheduler.reset();
         follower = Constants.create(hardwareMap);
-        follower.setPose(start2);
+        follower.setPose(start);
         follower.update();
 
         waitForStart();
@@ -63,7 +65,7 @@ public class OdoAutoRedClose extends LinearOpMode {
     }
 
     public Path path1() {
-        return Paths.line(start2, path1).tangent();
+        return Paths.line(start, path1).constant(path1);
     }
 
     public Path path2() {

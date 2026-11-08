@@ -50,7 +50,7 @@ public class Constants {
         c.xPodOffset.set(-4.2107322272353285);
         c.yPodOffset.set(4.059937244325172);
         c.xPodDirection.set(GoBildaPinpointDriver.EncoderDirection.FORWARD);
-        c.yPodDirection.set(GoBildaPinpointDriver.EncoderDirection.FORWARD);
+        c.yPodDirection.set(GoBildaPinpointDriver.EncoderDirection.REVERSED);
         c.globalDistanceUnit.set(DistanceUnit.INCH);
         c.offsetUnits.set(DistanceUnit.INCH);
     });
