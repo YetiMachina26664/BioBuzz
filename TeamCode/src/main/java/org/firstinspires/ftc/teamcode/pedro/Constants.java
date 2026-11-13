@@ -22,7 +22,63 @@ import com.pedropathing.api.PoseFactory;
 import com.pedropathing.math.Pose;
 
 public class Constants {
-    public static Follower create_old(HardwareMap h) {
+    public static MecanumConfig drivetrainConfig = new MecanumConfig(c -> {
+        c.frontLeftName.set("left_front");
+        c.frontRightName.set("right_front");
+        c.backLeftName.set("left_back");
+        c.backRightName.set("right_back");
+        c.frontLeftDirection.set(DcMotorSimple.Direction.REVERSE);
+        c.frontRightDirection.set(DcMotorSimple.Direction.FORWARD);
+        c.backLeftDirection.set(DcMotorSimple.Direction.REVERSE);
+        c.backRightDirection.set(DcMotorSimple.Direction.FORWARD);
+    });
+
+    public static PinpointConfig localizerConfig = new PinpointConfig(c -> {
+        c.name.set("pinpoint");
+        c.podType.set(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
+        c.xPodOffset.set(-6.749731349194144);
+        c.yPodOffset.set(6.6091276153804746);
+        c.xPodDirection.set(GoBildaPinpointDriver.EncoderDirection.FORWARD);
+        c.yPodDirection.set(GoBildaPinpointDriver.EncoderDirection.REVERSED);
+        c.globalDistanceUnit.set(DistanceUnit.INCH);
+        c.offsetUnits.set(DistanceUnit.INCH);
+    });
+
+    public static ForesightConfig foresightConfig = new ForesightConfig(
+            c -> {
+                Controller primaryTranslationalForward = Controller.proportional(0.3788463035885131);
+                Controller secondaryTranslationalForward = Controller.proportional(0.1399735862162865);
+                Controller primaryTranslationalLateral = Controller.proportional(0.5276613056072817);
+                Controller secondaryTranslationalLateral = Controller.proportional(0.194956753052133);
+
+                c.forwardTranslational.set(Controller.piecewise(secondaryTranslationalForward).put(2.5, primaryTranslationalForward));
+                c.strafeTranslational.set(Controller.piecewise(secondaryTranslationalLateral).put(2.5, primaryTranslationalLateral));
+
+                c.coast.set(Controller.proportionalFeedforward(0.017199344716210735));
+                c.brake.set(Controller.proportionalFeedforward(0.014619443008779124));
+
+                c.headingFeedback.set(Controller.proportional(4.948255684405298));
+                c.headingBrakeCoefficients.set(Vector2D.cartesian(0.047273641758774416, 0.009548334254286946));
+
+                c.linearBrakeCoefficients.set(Matrix.diag(0.05424417509786454, 0.04895432853493132));
+                c.quadraticBrakeCoefficients.set(Matrix.diag(0.001604982145837956, 0.0018292267161962338));
+
+                c.maxAchievableForwardVelocity.set(61.3570641453111);
+                c.maxAchievableStrafeVelocity.set(46.217941309725205);
+                c.naturalForwardDeceleration.set(34.20137668874942);
+                c.naturalStrafeDeceleration.set(67.08966098288278);
+            }
+    );
+
+    public static Follower create(HardwareMap h) {
+        return new Follower(
+                new PinpointLocalizer(h, localizerConfig),
+                new Mecanum(h, drivetrainConfig),
+                new Foresight(foresightConfig)
+        );
+    }
+
+    /*public static Follower create_old(HardwareMap h) {
         return null;
     }
 
@@ -87,5 +143,5 @@ public class Constants {
                 new Mecanum(h, drivetrainConfig),
                 new Foresight(foresightConfig)
         );
-    }
+    }*/
 }
