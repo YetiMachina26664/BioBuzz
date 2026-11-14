@@ -65,10 +65,10 @@ public class AutoPath extends LinearOpMode {
     }
 
     public Path path1() {
-        return Paths.line(start, path1).constant(path1);
+        return line(start, path1).constant(path1);
     }
 
     public Path path2() {
-        return Paths.line(path1, point2).constant(point2);
+        return line(path1, point2).constant(point2);
     }
 }

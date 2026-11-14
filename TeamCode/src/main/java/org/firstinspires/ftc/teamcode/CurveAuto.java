@@ -15,6 +15,9 @@ import static com.pedropathing.ivy.groups.Groups.sequential;
 import static com.pedropathing.ivy.pedro.PedroCommands.follow;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 
@@ -22,6 +25,8 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 public class CurveAuto extends LinearOpMode {
 
     private Follower follower;
+    private Servo gateNectar;
+    private DcMotorEx flywheel;
 
     private final PoseFactory poseFactory = PoseFactory.degrees();
 
@@ -33,9 +38,27 @@ public class CurveAuto extends LinearOpMode {
     private final Pose point2Control1 = poseFactory.of(22.5, 107, 0);
     private final Pose point3 = poseFactory.of(59.5, 133, 270);
 
-    // Autonomous routine
+    public double toTPS6000(double rpm) {
+        return (rpm * 28) / 60;
+    }
+
+    // Autonomous routine using IVY commands
     public Command autoRoutine() {
         return sequential(
+                // 1. Rev flywheel to proper RPM (500 RPM)
+                instant(() -> flywheel.setVelocity(toTPS6000(3400))),
+                // 2. Wait 1 second for flywheel to spin up
+                waitMs(1000.0),
+                // 3. Open gate
+                instant(() -> gateNectar.setPosition(0.7)),
+                // 4. Wait 3 seconds with gate open
+                waitMs(4000.0),
+                // 5. Close gate and stop flywheel
+                instant(() -> {
+                    gateNectar.setPosition(0.0);
+                    flywheel.setVelocity(0);
+                }),
+                // 6. Follow the curved paths
                 follow(follower, path1()),
                 follow(follower, path2()),
                 follow(follower, path3())
@@ -46,6 +69,12 @@ public class CurveAuto extends LinearOpMode {
     public void runOpMode() {
         Scheduler.reset();
         follower = Constants.create(hardwareMap);
+
+        gateNectar = hardwareMap.get(Servo.class, "gateNectar");
+        flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
+        flywheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        flywheel.setDirection(DcMotor.Direction.REVERSE);
+
         follower.setPose(start);
         follower.update();
 
@@ -70,14 +99,14 @@ public class CurveAuto extends LinearOpMode {
     }
 
     public Path path1() {
-        return Paths.curve(start, path1Control1, path1).linear(start, path1);
+        return curve(start, path1Control1, path1).linear(start, path1);
     }
 
     public Path path2() {
-        return Paths.curve(point2Start, point2Control1, point2).linear(point2Start, point2);
+        return curve(point2Start, point2Control1, point2).linear(point2Start, point2);
     }
 
     public Path path3() {
-        return Paths.line(point2, point3).constant(point3);
+        return line(point2, point3).constant(point3);
     }
 }
