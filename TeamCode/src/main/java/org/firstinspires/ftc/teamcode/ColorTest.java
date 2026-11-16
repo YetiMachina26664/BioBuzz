@@ -7,10 +7,10 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 @TeleOp(name="Color Sensor Test", group="Linear OpMode")
 public class ColorTest extends OpMode {
-    private RevColorSensorV3 color;
+    private NormalizedRevColorSensorV3 color;
 
     public void init() {
-        color = hardwareMap.get(RevColorSensorV3.class, "color");
+        color = hardwareMap.get(NormalizedRevColorSensorV3.class, "color");
     }
 
     public void loop() {
