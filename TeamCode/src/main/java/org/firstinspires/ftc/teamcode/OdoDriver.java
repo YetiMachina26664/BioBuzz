@@ -87,12 +87,11 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
         boolean isFieldFar = false;
 
 	public static final int colorTolerence = 10;
-	// Change these values
 	// Colours to Check against in RGB
-	public static final int[] redCheck = {194, 102, 61};
-	public static final int[] greenCheck = {87, 236, 155};
-	public static final int[] blueCheck = {56, 159, 255};
-	public static final int[] yellowCheck = {255, 255, 144};
+	public static final int[] redCheck = {194, 102, 61}; // Change This 'tis Incorrect('tis currently a Pale Peach)
+	public static final int[] greenCheck = {87, 236, 155}; // Change This 'tis Incorrect('tis currently a Turquoise)
+	public static final int[] blueCheck = {56, 159, 255}; // Change This 'tis Incorrect('tis currently a Sky Blue)
+	public static final int[] yellowCheck = {255, 255, 144}; // Change This 'tis Incorrect('tis currently a White)
 
 	// Change these values
 	// Locations for positions for starting locations
