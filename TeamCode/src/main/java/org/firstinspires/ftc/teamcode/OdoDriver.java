@@ -86,13 +86,13 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
         boolean isBlueTeam = false;
         boolean isFieldFar = false;
 
-	public static final int colorTolerence = 1000;
+	public static final int colorTolerence = 10;
 	// Change these values
 	// Colours to Check against in RGB
-	public static int[] redCheck = {799245, 419690, 250390};
-	public static int[] greenCheck = {359550, 968490, 635460};
-	public static int[] blueCheck = {231285, 654630, 1390260};
-	public static int[] yellowCheck = {1066665, 1602420, 591090};
+	public static final int[] redCheck = {194, 102, 61};
+	public static final int[] greenCheck = {87, 236, 155};
+	public static final int[] blueCheck = {56, 159, 255};
+	public static final int[] yellowCheck = {255, 255, 144};
 
 	// Change these values
 	// Locations for positions for starting locations
