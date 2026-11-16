@@ -88,10 +88,10 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 
 	public static final int colorTolerence = 10;
 	// Colours to Check against in RGB
-	public static final int[] redCheck = {194, 102, 61}; // Change This 'tis Incorrect('tis currently a Pale Peach)
-	public static final int[] greenCheck = {87, 236, 155}; // Change This 'tis Incorrect('tis currently a Turquoise)
-	public static final int[] blueCheck = {56, 159, 255}; // Change This 'tis Incorrect('tis currently a Sky Blue)
-	public static final int[] yellowCheck = {255, 255, 144}; // Change This 'tis Incorrect('tis currently a White)
+	public static final int[] redCheck = {222, 67, 67}; // PLA Matte Scarlet Red
+	public static final int[] greenCheck = {97, 198, 128}; // PLA Matte Grass Green
+	public static final int[] blueCheck = {0, 134, 214}; // PLA Basic Cyan
+	public static final int[] yellowCheck = {247, 217, 89}; // PLA Matte Lemon Yellow
 
 	// Change these values
 	// Locations for positions for starting locations
