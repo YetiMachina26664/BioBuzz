@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -22,7 +23,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
         public static Pose startingPose;
         private TelemetryManager telemetryM;
 
-        private RevColorSensorV3 color;
+        private NormalizedColorSensor color;
 
         private DcMotorEx flywheel = null;
         private DcMotor intake = null;
@@ -88,10 +89,10 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 
 	public static final int colorTolerence = 10;
 	// Colours to Check against in RGB
-	public static final int[] redCheck = {222, 67, 67}; // PLA Matte Scarlet Red
-	public static final int[] greenCheck = {97, 198, 128}; // PLA Matte Grass Green
-	public static final int[] blueCheck = {0, 134, 214}; // PLA Basic Cyan
-	public static final int[] yellowCheck = {247, 217, 89}; // PLA Matte Lemon Yellow
+	public static final int[] redCheck = {28,14,8}; // PLA Matte Scarlet Red
+	public static final int[] greenCheck = {13,38,24}; // PLA Matte Grass Green
+	public static final int[] blueCheck = {8,25,50}; // PLA Basic Cyan
+	public static final int[] yellowCheck = {45,69,24}; // PLA Matte Lemon Yellow
 
 	// Change these values
 	// Locations for positions for starting locations
@@ -101,6 +102,8 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 	public Pose RED_START_CLOSE = new Pose(59.25,144,0.0);
 
     double adjustedSpeed = 0.0;
+
+    NormalizedRGBA colorsNormalized;
 
     // Function to get the distance from the robot to the goal, relies on calcHypotenuse function
         public double getDist(Follower follower) {
@@ -147,9 +150,9 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
             return Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
         }
 
-        public boolean isOnFarSide(Follower follower) {
+        /*public boolean isOnFarSide(Follower follower) {
             return (follower.pose().y() >= 0);
-        }
+        }*/
 
         public double powerRegressionPoly(double x) {
             if (x < 60) {
@@ -180,24 +183,26 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 			        ((rgb[1] > (colorCheck[1] - colorTolerence)) && (rgb[1] < (colorCheck[1] + colorTolerence))) &&
 			        ((rgb[2] > (colorCheck[2] - colorTolerence)) && (rgb[2] < (colorCheck[2] + colorTolerence))));
 		}
-        public Pose getStartingPose(RevColorSensorV3 colorSensor) {
-            NormalizedRGBA color;
-            color = colorSensor.getNormalizedColors();
+        public Pose getStartingPose(NormalizedRGBA colorsNormalized) {
 		    // Get RGB values
-		    int[] rgb= {(int) (color.red * 255), (int) (color.green * 255), (int) (color.blue * 255)};
+		    int[] rgb= {(int) (colorsNormalized.red * 255), (int) (colorsNormalized.green * 255), (int) (colorsNormalized.blue * 255)};
 		    // Check RGB values against red colour to print
 		    // Check to see if each channel is in tolerances(10 on each side)
 		    if (compareColorArrays(rgb, redCheck)) {
                 isBlueTeam = false;
+                isFieldFar = false;
                 return RED_START_CLOSE;
             } else if (compareColorArrays(rgb, yellowCheck)) {
                 isBlueTeam = false;
+                isFieldFar = true;
                 return RED_START_FAR;
             } else if (compareColorArrays(rgb, blueCheck)) {
                 isBlueTeam = true;
+                isFieldFar = false;
                 return BLUE_START_CLOSE;
             } else if (compareColorArrays(rgb, greenCheck)) {
                 isBlueTeam = true;
+                isFieldFar = true;
                 return BLUE_START_FAR;
             } else {
                 return new Pose(0,0,0);
@@ -208,7 +213,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
         public void init() {
             follower = Constants.create(hardwareMap);
 
-            color = hardwareMap.get(RevColorSensorV3.class, "color");
+            color = hardwareMap.get(NormalizedColorSensor.class, "color");
 
             /*NormalizedColorSensor normalizedSensor = color;
             normalizedSensor.setGain(40);
@@ -270,20 +275,21 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
         }
 
         public void init_loop() {
-            NormalizedRGBA colorsNormalized;
             colorsNormalized = color.getNormalizedColors();
 
             do {
-                follower.setPose(getStartingPose(color));
+                follower.setPose(getStartingPose(colorsNormalized));
                 follower.update();
             } while (follower.pose() == null);
 
             follower.update();
 
-            telemetry.addData("Red", colorsNormalized.red * 255);
-            telemetry.addData("Green", colorsNormalized.green * 255);
-            telemetry.addData("Blue", colorsNormalized.blue * 255);
+            telemetry.addData("Red", (int) (colorsNormalized.red * 255));
+            telemetry.addData("Green", (int) (colorsNormalized.green * 255));
+            telemetry.addData("Blue", (int) (colorsNormalized.blue * 255));
             telemetry.addData("Starting Pose", follower.pose());
+            telemetry.addData("Team Color","%s",isBlueTeam ? "Blue":"Red");
+            telemetry.addData("Field Side","%s", isFieldFar ? "Far":"Close");
             telemetry.update();
         }
 
@@ -314,7 +320,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
                 follower.manual(forward, lateral, turn);
             }
 
-            isFieldFar = isOnFarSide(follower);
+            //isFieldFar = isOnFarSide(follower);
             tgtTheta = getTargetAngle(follower);
             distFromGoal = getDist(follower);
             hypotenuse = calcHypotenuse(follower.pose().x(), follower.pose().y());
